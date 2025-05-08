@@ -12,7 +12,7 @@ if os.path.exists('requirements.txt'):
 
 setup(
     name='aini',
-    version='0.1.0',
+    version='0.1.1',
     author='Alpha x1',
     author_email='alpha.xone@outlook.com',
     description='Make class instantiation easy with auto-imports',
