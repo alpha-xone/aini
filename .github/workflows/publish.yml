@@ -25,7 +25,17 @@ jobs:
       run: |
         python -m build
 
-    - name: Publish package
+    - name: Publish package using GitHub Action
+      id: pypi-publish
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         password: ${{ secrets.PYPI_API_TOKEN }}
+      continue-on-error: true
+
+    - name: Publish with twine if GitHub Action fails
+      if: steps.pypi-publish.outcome == 'failure'
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+      run: |
+        python -m twine upload dist/*
