@@ -11,14 +11,14 @@ if os.path.exists('requirements.txt'):
         requirements = [line.strip() for line in req_file if line.strip() and not line.startswith('#')]
 
 setup(
-    name='ainit',
-    version='0.1.0c',
-    author='Alpha X1',
+    name='aini',
+    version='0.1.0',
+    author='Alpha x1',
     author_email='alpha.xone@outlook.com',
     description='Make class instantiation easy with auto-imports',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    url='https://github.com/alpha-xone/xinit',
+    url='https://github.com/alpha-xone/aini',
     packages=find_packages(),
     classifiers=[
         'Programming Language :: Python :: 3',
