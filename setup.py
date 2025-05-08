@@ -12,7 +12,7 @@ if os.path.exists('requirements.txt'):
 
 setup(
     name='aini',
-    version='0.1.2',
+    version='0.1.3',
     author='Alpha x1',
     author_email='alpha.xone@outlook.com',
     description='Make class instantiation easy with auto-imports',
@@ -20,6 +20,7 @@ setup(
     long_description_content_type='text/markdown',
     url='https://github.com/alpha-xone/aini',
     packages=find_packages(),
+    include_package_data=True,
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License',
