@@ -138,12 +138,25 @@ def aini(
     ext = ['yml', 'yaml'] if file_type == 'yaml' else ['json']
     if file_path.rsplit('.')[-1].lower() not in ext:
         file_path += f'.{ext[0]}'
+
+    # First check if file exists at specified path (absolute or relative to current working directory)
     if not os.path.exists(file_path):
-        inferred_path = os.path.join(os.path.dirname(script_dir), file_path)
-        if os.path.exists(inferred_path):
-            file_path = inferred_path
+        # Try the current working directory
+        cwd_path = os.path.join(os.getcwd(), file_path)
+        if os.path.exists(cwd_path):
+            file_path = cwd_path
         else:
-            raise FileNotFoundError(f'YAML file not found: {file_path}')
+            # Try relative to the script directory
+            script_relative_path = os.path.join(script_dir, file_path)
+            if os.path.exists(script_relative_path):
+                file_path = script_relative_path
+            else:
+                # As a last resort, try the original behavior (parent directory)
+                parent_path = os.path.join(os.path.dirname(script_dir), file_path)
+                if os.path.exists(parent_path):
+                    file_path = parent_path
+                else:
+                    raise FileNotFoundError(f'File not found: {file_path}')
 
     with open(file_path, 'r', encoding='utf-8') as f:
         if file_type == 'yaml':
