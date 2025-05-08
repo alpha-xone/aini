@@ -1,0 +1,28 @@
+defaults:
+  session_state: {}
+  debug_mode: false
+
+workflow:
+  class: agno.workflow.Workflow
+  params:
+    name: ${name}
+    workflow_id: ${workflow_id}
+    description: ${description}
+
+    # --- User settings ---
+    user_id: ${user_id}
+
+    # -*- Session settings
+    session_id: ${session_id}
+    session_name: ${session_name}
+    session_state: ${session_state}
+
+    # --- Workflow Memory ---
+    memory: ${memory}
+
+    # --- Workflow Storage ---
+    storage: ${storage}
+    extra_data: ${extra_data}
+
+    # --- Debug & Monitoring ---
+    debug_mode: ${debug_mode}
