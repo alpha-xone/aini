@@ -1,2 +1,5 @@
 include LICENSE
 include README.md
+recursive-include . *.yml *.yaml *.json
+recursive-exclude build *.yml *.yaml *.json
+recursive-exclude dist *.yml *.yaml *.json
