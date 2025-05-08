@@ -25,13 +25,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest pytest-cov codecov
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        # Verify pytest-cov is installed correctly
+        pip list | grep pytest-cov
     - name: Lint with flake8
       run: |
         # stop the build if there are Python syntax errors or undefined names
         flake8 --extend-ignore=E701,E501 aini
     - name: Test with pytest
       run: |
-        pytest --doctest-modules --cov -v aini
+        pytest --doctest-modules --cov=aini -v
     - name: Coverage report
       run: |
-        codecov --token=ff17768d-30bd-4917-98f2-a011606597ea
+        codecov --token=7f7d3720-642b-4aed-8e44-fb9c6eb0c404
