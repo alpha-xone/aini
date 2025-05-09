@@ -82,6 +82,7 @@ def build_from_config(
     Recursively construct objects from a configuration structure.
 
     - If cfg is a dict with a 'class' key, import and instantiate it.
+    - If cfg also has an 'init' key, use that method to instantiate instead of constructor.
     - If cfg is a list, apply build_from_config on each element.
     - Otherwise, return cfg as a literal.
     """
@@ -91,15 +92,25 @@ def build_from_config(
     if isinstance(cfg, dict) and 'class' in cfg:
         class_path = cfg['class']
         params = cfg.get('params', {})
+        init_method = cfg.get('init', None)  # Get initialization method name if specified
 
         # Recursively build nested parameters
         built_params = {
             key: build_from_config(val, base_module) for key, val in params.items()
         }
 
-        # Instantiate the class
+        # Import the class
         cls = import_class(class_path, base_module)
-        return cls(**built_params)
+
+        # Use initialization method if specified, otherwise use constructor
+        if init_method:
+            if not hasattr(cls, init_method):
+                raise AttributeError(f"Class {class_path} has no method '{init_method}'")
+            init_func = getattr(cls, init_method)
+            return init_func(**built_params)
+        else:
+            # Default behavior: use constructor
+            return cls(**built_params)
 
     # Base literal case
     return cfg
