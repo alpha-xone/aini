@@ -12,12 +12,14 @@ pip install aini
 
 ## Usage
 
-### Autogen
+### [Autogen](https://github.com/microsoft/autogen)
+
+Use [DeepSeek](https://platform.deepseek.com/) as the model for the assistant agent.
 
 ```python
 from aini import aini, aview
 
-# Load assistant agent with DeepSeek as its model
+# Load assistant agent with DeepSeek as its model - requires DEEPSEEK_API_KEY
 ds = aini('autogen/llm', 'ds')
 agent = aini('autogen/assistant', name='deepseek', model=ds)
 
@@ -48,7 +50,7 @@ aview(ans)
 }
 ```
 
-### Agno
+### [Agno](https://github.com/agno-agi/agno)
 
 ```python
 # Load an agent with tools from configuration files

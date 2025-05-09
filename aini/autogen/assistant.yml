@@ -1,10 +1,68 @@
+defaults:
+  model_client_stream: false
+  reflect_on_tool_use: false
+
 assistant:
+  # An agent that provides assistance with tool use.
   class: autogen_agentchat.agents.AssistantAgent
   params:
+    # str: the name of the agent.
     name: ${name}
+    # ChatCompletionClient: the model client to use for inference.
     model_client:
       class: autogen_core.models.ChatCompletionClient
       init: load_component
       params:
         model: ${model}
         expected: ${expected}
+    # List[BaseTool[Any, Any]  | Callable[..., Any] | Callable[..., Awaitable[Any]]]: the tools to register with the agent.
+    tools: ${tools}
+    # Workbench: the workbench to use for the agent.
+    # Tools cannot be used when workbench is set and vice versa.
+    workbench: ${workbench}
+    # List[HandoffBase | str]: The handoff configurations for the agent,
+    #   allowing it to transfer to other agents by responding with a :class:`HandoffMessage`.
+    #   The transfer is only executed when the team is in :class:`~autogen_agentchat.teams.Swarm`.
+    #   If a handoff is a string, it should represent the target agent's name.
+    handoffs: ${handoffs}
+    # ChatCompletionContext: The model context for storing and retrieving :class:`~autogen_core.models.LLMMessage`.
+    # The handoff configurations for the agent,
+    #   allowing it to transfer to other agents by responding with a :class:`HandoffMessage`.
+    #   The transfer is only executed when the team is in :class:`~autogen_agentchat.teams.Swarm`.
+    #   If a handoff is a string, it should represent the target agent's name.
+    model_context: ${model_context}
+    # str: the description of the agent.
+    description: ${description}
+    # str: the system message for the model.
+    #   If provided, it will be prepended to the messages in the model context when making an inference. Set to `None` to disable.
+    system_message: ${system_message}
+    # bool: If `True`, the model client will be used in streaming mode.
+    #   :meth:`on_messages_stream` and :meth:`BaseChatAgent.run_stream` methods will also
+    #   yield :class:`~autogen_agentchat.messages.ModelClientStreamingChunkEvent`
+    #   messages as the model client produces chunks of response. Defaults to `False`.
+    model_client_stream: ${model_client_stream}
+    # bool: If `True`, the agent will make another model inference using the tool call and result
+    #   to generate a response. If `False`, the tool call result will be returned as the response.
+    #   By default, if `output_content_type` is set, this will be `True`;
+    #   if `output_content_type` is not set, this will be `False`.
+    reflect_on_tool_use: ${reflect_on_tool_use}
+    # type[BaseModel]: the output content type for :class:`~autogen_agentchat.messages.StructuredMessage` response as a Pydantic model.
+    #   This will be used with the model client to generate structured output.
+    #   If this is set, the agent will respond with a :class:`~autogen_agentchat.messages.StructuredMessage`
+    #   instead of a :class:`~autogen_agentchat.messages.TextMessage`
+    #   in the final response, unless `reflect_on_tool_use` is `False` and a tool call is made.
+    output_content_type: ${output_content_type}
+    # str: (Experimental) The format string used for the content of a :class:`~autogen_agentchat.messages.StructuredMessage` response.
+    output_content_type_format: ${output_content_type_format}
+    # str: the format string used to create the content for a :class:`~autogen_agentchat.messages.TextMessage` response.
+    #   The format string is used to format the final response for every tool call result.
+    #   Defaults to "{result}".
+    #   When `reflect_on_tool_use` is `False`, a concatenation of all the tool call results, separated by a new line character ('\\n')
+    #   will be returned as the response.
+    #   Available variables: `{tool_name}`, `{arguments}`, `{result}`.
+    #   For example, `"{tool_name}: {result}"` will create a summary like `"tool_name: result"`.
+    tool_call_summary_format: ${tool_call_summary_format}
+    # Sequence[Memory]: the memory store to use for the agent.
+    memory: ${memory}
+    # Dict[str, str]: optional metadata for tracking.
+    metadata: ${metadata}
