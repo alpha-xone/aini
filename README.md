@@ -2,7 +2,7 @@
 
 # aini
 
-Make class instantiation easy with auto-imports
+Make **AI** class **ini**tialization easy with auto-imports.
 
 ## Installation
 
@@ -14,12 +14,14 @@ pip install aini
 
 ### aini
 
-**AI** component **in**itialization with auto-imports:
-
 ```python
 from aini import aini
 
+# Load an agent with tools from configuration files
 agent = aini('agno/agent', tools=[aini('agno/tools', 'google')])
+
+# Run the agent
+response = agent.run('Compare MCP and A2A')
 ```
 
 ### aview
@@ -29,13 +31,14 @@ View AI component properties:
 ```python
 from aini import aview
 
-# Example usage
+# Display component structure with filtering
 ans = agent.run('Compare MCP and A2A')
-aview(ans)
+aview(ans, exclude_keys=['metric'])
+
 [Output]
 <agno.run.response.RunResponse>
 {
-  'content': 'Here’s a comparison between **MCP (Multi-Component Protocol)** and **A2A (Agent-to-Agent Protocol)** based on the available resources: ...',
+  'content': 'Here's a comparison between **MCP (Multi-Component Protocol)** and **A2A (Agent-to-Agent Protocol)** based on the available resources: ...',
   'content_type': 'str',
   'event': 'RunResponse',
   'messages': [
@@ -54,6 +57,6 @@ aview(ans)
   ...
 }
 
-# Save to file
+# Export to YAML for debugging
 aview(ans, to_file='debug/output.yaml')
 ```
