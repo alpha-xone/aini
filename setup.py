@@ -21,6 +21,9 @@ setup(
     url='https://github.com/alpha-xone/aini',
     packages=find_packages(),
     include_package_data=True,
+    package_data={
+        'aini': ['**/*.yml', '**/*.yaml', '**/*.json'],
+    },
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: Apache Software License',
