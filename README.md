@@ -60,7 +60,7 @@ agent = aini('agno/agent', tools=[aini('agno/tools', 'google')])
 ans = agent.run('Compare MCP and A2A')
 
 # Display component structure with filtering
-aview(ans, exclude_keys=['metric'])
+aview(ans, exclude_keys=['metrics'])
 [Output]
 <agno.run.response.RunResponse>
 {

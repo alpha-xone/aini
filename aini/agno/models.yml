@@ -1,0 +1,155 @@
+# DeepSeek Models
+ds:
+  class: agno.models.deepseek.DeepSeek
+ds-r1:
+  class: agno.models.deepseek.DeepSeek
+  params:
+    id: deepseek-reasoner
+
+# Silicon Flow Models
+
+## DeepSeek Models
+sf-ds:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Pro/deepseek-ai/DeepSeek-V3
+    name: DeepSeek-V3
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-r1:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Pro/deepseek-ai/DeepSeek-R1
+    name: DeepSeek-R1
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+## Qwen Models
+sf-qwen:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Qwen/Qwen3-8B
+    name: Qwen3-8B
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-qwen-14b:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Qwen/Qwen3-14B
+    name: Qwen3-14B
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-qwen-30b:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Qwen/Qwen3-30B-A3B
+    name: Qwen3-30B-A3B
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-qwen-32b:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Qwen/Qwen3-32B
+    name: Qwen3-32B
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+## GLM Models
+sf-glm:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: THUDM/GLM-Z1-9B-0414
+    name: GLM-Z1-9B-0414
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-glm4-32b:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: THUDM/GLM-4-32B-0414
+    name: GLM-4-32B-0414
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-glm-32b:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: THUDM/GLM-Z1-32B-0414
+    name: GLM-Z1-32B-0414
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+## Embedding Models
+sf-bge:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Pro/BAAI/bge-m3
+    name: BGE-M3-1024
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-bge-m3:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: BAAI/bge-m3
+    name: BGE-M3-1024
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-youdao:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: netease-youdao/bce-embedding-base_v1
+    name: BCE-Embedding-Base-768
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+## Reranker Models
+sf-bge-pro-rr:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: Pro/BAAI/bge-reranker-v2-m3
+    name: BGE-Reranker-M3-568
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-bge-rr:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: BAAI/bge-reranker-v2-m3
+    name: BGE-Reranker-M3-568
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-youdao-rr:
+  class: agno.models.openai.like.OpenAILike
+  params:
+    id: netease-youdao/bce-reranker-base_v1
+    name: BCE-Reranker-Base-279
+    provider: SiliconFlow
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+# Groq Models
+groq-r1:
+  class: agno.models.groq.Groq
+  params:
+    id: deepseek-r1-distill-llama-70b
