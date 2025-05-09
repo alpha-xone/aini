@@ -12,29 +12,53 @@ pip install aini
 
 ## Usage
 
-### aini
+### Augogen
 
 ```python
-from aini import aini
+from aini import aini, aview
 
+# Load assistant agent with DeepSeek as its model
+ds = aini('autogen/llm', 'ds')
+agent = aini('autogen/agent', name='deepseek', model=ds)
+
+# Run the agent
+ans = await agent.run('What is your name')
+
+# Display component structure
+aview(ans)
+[Output]
+<autogen_agentchat.base._task.TaskResult>
+{
+  'messages': [
+    {
+      'source': 'user',
+      'content': 'What is your name',
+      'type': 'TextMessage'
+    },
+    {
+      'source': 'ds',
+      'models_usage <autogen_core.models._types.RequestUsage>': {
+        'prompt_tokens': 32,
+        'completion_tokens': 17
+      },
+      'content': 'My name is DeepSeek Chat! 😊 How can I assist you today?',
+      'type': 'TextMessage'
+    }
+  ]
+}
+```
+
+### Agno
+
+```python
 # Load an agent with tools from configuration files
 agent = aini('agno/agent', tools=[aini('agno/tools', 'google')])
 
 # Run the agent
-response = agent.run('Compare MCP and A2A')
-```
-
-### aview
-
-View AI component properties:
-
-```python
-from aini import aview
+ans = agent.run('Compare MCP and A2A')
 
 # Display component structure with filtering
-ans = agent.run('Compare MCP and A2A')
 aview(ans, exclude_keys=['metric'])
-
 [Output]
 <agno.run.response.RunResponse>
 {
@@ -67,4 +91,10 @@ aview(ans, exclude_keys=['metric'])
 
 # Export to YAML for debugging
 aview(ans, to_file='debug/output.yaml')
+```
+
+### Mem0
+
+```python
+memory = aini('mem0/mem0', 'mem0')
 ```
