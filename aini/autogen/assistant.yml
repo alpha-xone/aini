@@ -1,0 +1,10 @@
+assistant:
+  class: autogen_agentchat.agents.AssistantAgent
+  params:
+    name: ${name}
+    model_client:
+      class: autogen_core.models.ChatCompletionClient
+      init: load_component
+      params:
+        model: ${model}
+        expected: ${expected}
