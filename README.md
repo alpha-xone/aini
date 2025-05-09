@@ -12,7 +12,7 @@ pip install aini
 
 ## Usage
 
-### Augogen
+### Autogen
 
 ```python
 from aini import aini, aview
