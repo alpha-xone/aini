@@ -1,3 +1,5 @@
+![AINI](images/aini.png)
+
 # aini
 
 Make class instantiation easy with auto-imports
