@@ -19,7 +19,7 @@ from aini import aini, aview
 
 # Load assistant agent with DeepSeek as its model
 ds = aini('autogen/llm', 'ds')
-agent = aini('autogen/agent', name='deepseek', model=ds)
+agent = aini('autogen/assistant', name='deepseek', model=ds)
 
 # Run the agent
 ans = await agent.run('What is your name')
