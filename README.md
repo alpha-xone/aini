@@ -20,11 +20,11 @@ Use [DeepSeek](https://platform.deepseek.com/) as the model for the assistant ag
 from aini import aini, aview
 
 # Load assistant agent with DeepSeek as its model - requires DEEPSEEK_API_KEY
-ds = aini('autogen/llm', 'ds')
-agent = aini('autogen/assistant', name='deepseek', model=ds)
+client = aini('autogen/client', model=aini('autogen/llm', 'ds'))
+agent = aini('autogen/assistant', name='deepseek', model_client=client)
 
 # Run the agent
-ans = await agent.run('What is your name')
+ans = await agent.run(task='What is your name')
 
 # Display component structure
 aview(ans)

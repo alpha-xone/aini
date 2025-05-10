@@ -9,14 +9,7 @@ assistant:
     # str: the name of the agent.
     name: ${name}
     # ChatCompletionClient: the model client to use for inference.
-    model_client:
-      class: autogen_core.models.ChatCompletionClient
-      init: load_component
-      params:
-        # ComponentModel
-        model: ${model}
-        # Type[ExpectedType]: explicit type only if used directly on ComponentLoader.
-        expected: ${expected}
+    model_client: ${model_client}
     # List[BaseTool[Any, Any]  | Callable[..., Any] | Callable[..., Awaitable[Any]]]: Tthe tools to register with the agent.
     tools: ${tools}
     # Workbench: the workbench to use for the agent.

@@ -1,0 +1,16 @@
+defaults:
+  buffer_size: 10
+
+buffered:
+  class: autogen_core.model_context.BufferedChatCompletionContext
+  params:
+    buffer_size: ${buffer_size}
+    initial_messages: ${initial_messages}
+
+token:
+  class: autogen_core.model_context.TokenCountingChatCompletionContext
+  params:
+    model_client: ${model_client}
+    token_limit: ${token_limit}
+    tools: ${tools}
+    initial_messages: ${initial_messages}

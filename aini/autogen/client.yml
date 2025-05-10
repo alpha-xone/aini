@@ -1,0 +1,8 @@
+model_client:
+  class: autogen_core.models.ChatCompletionClient
+  init: load_component
+  params:
+    # ComponentModel
+    model: ${model}
+    # Type[ExpectedType]: explicit type only if used directly on ComponentLoader.
+    expected: ${expected}
