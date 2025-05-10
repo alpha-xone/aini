@@ -1,0 +1,35 @@
+# pip install "autogen-ext[web-surfer]"
+
+web_surfer:
+  class: autogen_ext.agents.web_surfer.MultimodalWebSurfer
+  params:
+    # str – The name of the agent.
+    name: ${name}
+    # ChatCompletionClient) – The model client used by the agent. Must be multimodal and support function calling.
+    model_client: ${model_client}
+    # str – The folder where downloads are saved. Defaults to None, no downloads are saved.
+    downloads_folder: ${downloads_folder}
+    # str – The description of the agent. Defaults to MultimodalWebSurfer.DEFAULT_DESCRIPTION.
+    description: ${description}
+    # str – The directory where debug information is saved. Defaults to None.
+    debug_dir: ${debug_dir}
+    # bool – Whether the browser should be headless. Defaults to True.
+    headless: ${headless}
+    # str – The start page for the browser. Defaults to MultimodalWebSurfer.DEFAULT_START_PAGE.
+    start_page: ${start_page}
+    # bool – Whether to animate actions. Defaults to False.
+    animate_actions: ${animate_actions}
+    # bool – Whether to save screenshots. Defaults to False.
+    to_save_screenshots: ${to_save_screenshots}
+    # bool – Whether to use OCR. Defaults to False.
+    use_ocr: ${use_ocr}
+    # str – The browser channel. Defaults to None.
+    browser_channel: ${browser_channel}
+    # str – The browser data directory. Defaults to None.
+    browser_data_dir: ${browser_data_dir}
+    # bool – Whether to resize the viewport. Defaults to True.
+    to_resize_viewport: ${to_resize_viewport}
+    # Playwright – The playwright instance. Defaults to None.
+    playwright: ${playwright}
+    # BrowserContext – The browser context. Defaults to None.
+    context: ${context}
