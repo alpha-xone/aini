@@ -8,15 +8,12 @@ from rich.console import Console
 from rich.pretty import Pretty
 
 
-def get_methods(instance: Any) -> List[str]:
+def afunc(instance: Any) -> List[str]:
     """
-    Get the methods of the Agent / Team / Workflow instance.
-
-    Args:
-        agent: The Agent or Team or Workflow instance.
+    Get the functions of the input instance
 
     Returns:
-        A list of method names available in the instance.
+        A list of method names available in the instance
     """
     return [
         attr for attr in dir(instance)
