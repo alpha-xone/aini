@@ -95,7 +95,7 @@ aview(ans, exclude_keys=['metrics'])
 aview(ans, to_file='debug/output.yaml')
 ```
 
-### Mem0
+### [Mem0](https://mem0.ai/)
 
 ```python
 memory = aini('mem0/mem0', 'mem0')
