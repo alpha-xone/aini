@@ -10,9 +10,18 @@ if os.path.exists('requirements.txt'):
     with open('requirements.txt', 'r', encoding='utf-8') as req_file:
         requirements = [line.strip() for line in req_file if line.strip() and not line.startswith('#')]
 
+
+def get_version():
+    with open('aini/__init__.py', 'r', encoding='utf-8') as f:
+        for line in f:
+            if line.startswith('__version__'):
+                return line.split('=')[1].strip()
+    raise RuntimeError("Version information not found")
+
+
 setup(
     name='aini',
-    version='0.1.7',
+    version=get_version(),
     author='Alpha x1',
     author_email='alpha.xone@outlook.com',
     description='Make class instantiation easy with auto-imports',
