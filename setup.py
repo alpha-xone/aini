@@ -1,5 +1,6 @@
 from setuptools import setup, find_packages
 import os
+import ast
 
 with open('README.md', 'r', encoding='utf-8') as fh:
     long_description = fh.read()
@@ -15,7 +16,7 @@ def get_version():
     with open('aini/__init__.py', 'r', encoding='utf-8') as f:
         for line in f:
             if line.startswith('__version__'):
-                return line.split('=')[1].strip()
+                return ast.literal_eval(line.split('=')[1].strip())
     raise RuntimeError("Version information not found")
 
 
