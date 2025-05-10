@@ -1,4 +1,4 @@
-<img src="images/aini.gif" alt="AINI" loop="1" autoplay="true">
+![AINI](images/aini.gif)
 
 # aini
 
