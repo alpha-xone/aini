@@ -118,7 +118,7 @@ def build_from_config(
 
 def aini(
     file_path: str,
-    root_key: Optional[str] = None,
+    akey: Optional[str] = None,
     base_module: Optional[str] = None,
     file_type: Literal['yaml', 'json'] = 'yaml',
     **kwargs,
@@ -130,15 +130,15 @@ def aini(
 
     Args:
         file_path: Path to the YAML file. Relative path is working against current folder.
-        root_key: Optional key to select one instance of the YAML structure.
+        akey: Optional key to select one instance of the YAML structure.
         base_module: Base module for resolving relative imports.
             If not provided, derived from the parent folder of this builder file.
         kwargs: Variables for ${VAR} substitution.
 
     Returns:
-        - If root_key is provided, returns the instance at config[root_key].
-        - If YAML has exactly one top-level key (and root_key is None), returns its instance.
-        - If YAML has multiple top-level keys (and root_key is None), returns a dict mapping each key to its instance.
+        - If akey is provided, returns the instance at config[akey].
+        - If YAML has exactly one top-level key (and akey is None), returns its instance.
+        - If YAML has multiple top-level keys (and akey is None), returns a dict mapping each key to its instance.
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     default_module = os.path.basename(os.path.dirname(script_dir))
@@ -187,13 +187,13 @@ def aini(
     _config_ = resolve_vars(raw_config, kwargs, default_vars)
 
     if isinstance(_config_, dict):
-        # Select subset if root_key given
-        if root_key:
-            if root_key not in _config_:
-                raise KeyError(f"root_key '{root_key}' not found in YAML file")
-            return build_from_config(_config_[root_key], base_module)
+        # Select subset if akey given
+        if akey:
+            if akey not in _config_:
+                raise KeyError(f"akey '{akey}' not found in YAML file")
+            return build_from_config(_config_[akey], base_module)
 
-        # No root_key: handle single or multiple
+        # No akey: handle single or multiple
         if len(_config_) == 1:
             _, val = next(iter(_config_.items()))
             return build_from_config(val, base_module)
