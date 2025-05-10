@@ -13,6 +13,7 @@ defaults:
 
   # Mem0 default values
   history_db_path: db/histories.db
+  vecdb_provider: chroma
   vecdb_path: db/memories.chroma
   vecdb_collection: memories
 
@@ -43,7 +44,7 @@ mem0:
           password: ${NEO4J_PASSWORD}
       # Vector Store
       vector_store:
-        provider: chroma
+        provider: ${vecdb_provider}
         config:
           path: ${vecdb_path}
           collection_name: ${vecdb_collection}
