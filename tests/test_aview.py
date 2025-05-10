@@ -1,4 +1,4 @@
-from aini.viewer import get_methods, filter_instance_dict
+from aini.viewer import afunc, filter_instance_dict
 
 
 class SampleClass:
@@ -17,7 +17,7 @@ class SampleClass:
 
 def test_get_methods():
     sample = SampleClass()
-    methods = get_methods(sample)
+    methods = afunc(sample)
     assert 'method1' in methods
     assert 'method2' in methods
     assert '_private_method' not in methods
