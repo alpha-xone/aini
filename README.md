@@ -1,4 +1,4 @@
-![AINI](images/aini.png)
+![AINI](images/aini.gif)
 
 # aini
 
