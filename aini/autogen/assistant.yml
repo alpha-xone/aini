@@ -4,7 +4,7 @@ defaults:
 
 assistant:
   # An agent that provides assistance with tool use.
-  class: autogen.AssistantAgent
+  class: autogen_agentchat.agents.AssistantAgent
   params:
     # str: the name of the agent.
     name: ${name}
