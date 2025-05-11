@@ -1,0 +1,114 @@
+round:
+  # A team that runs a group chat with participants taking turns in a round-robin fashion to publish a message to all.
+  # If a single participant is in the team, the participant will be the only speaker.
+  class: autogen_agentchat.teams.RoundRobinGroupChat
+  params:
+    # List[BaseChatAgent] – The participants in the group chat.
+    participants: ${participants}
+    # TerminationCondition – The termination condition for the group chat. Defaults to None.
+    #   Without a termination condition, the group chat will run indefinitely.
+    termination_condition: ${termination_condition}
+    # int – The maximum number of turns in the group chat before stopping. Defaults to None, meaning no limit.
+    max_turns: ${max_turns}
+    # List[type[BaseAgentEvent | BaseChatMessage]] – A list of custom message types that will be used in the group chat.
+    #   If you are using custom message types or your agents produces custom message types, you need to specify them here.
+    #   Make sure your custom message types are subclasses of BaseAgentEvent or BaseChatMessage.
+    custom_message_types: ${custom_message_types}
+    # bool – Whether to emit team events through BaseGroupChat.run_stream(). Defaults to False.
+    emit_team_events: ${emit_team_events}
+
+selector:
+  # A group chat team that have participants takes turn to publish a message to all,
+  #   using a ChatCompletion model to select the next speaker after each message.
+  class: autogen_agentchat.teams.SelectorGroupChat
+  params:
+    # List[ChatAgent] – The participants in the group chat, must have unique names and at least two participants.
+    participants: ${participants}
+    # ChatCompletionClient – The ChatCompletion model client used to select the next speaker.
+    model_client: ${model_client}
+    # TerminationCondition – The termination condition for the group chat. Defaults to None.
+    #   Without a termination condition, the group chat will run indefinitely.
+    termination_condition: ${termination_condition}
+    # int – The maximum number of turns in the group chat before stopping. Defaults to None, meaning no limit.
+    max_turns: ${max_turns}
+    # str – The prompt template to use for selecting the next speaker. Available fields: ‘{roles}’, ‘{participants}’, and ‘{history}’.
+    #   {participants} is the names of candidates for selection.
+    #   The format is [“<name1>”, “<name2>”, …].
+    #   {roles} is a newline-separated list of names and descriptions of the candidate agents.
+    #   The format for each line is: “<name> : <description>”.
+    #   {history} is the conversation history formatted as a double newline separated of names and message content.
+    #   The format for each message is: “<name> : <message content>”.
+    selector_prompt: ${selector_prompt}
+    # bool – Whether to include the previous speaker in the list of candidates to be selected for the next turn. Defaults to False.
+    #   The model may still select the previous speaker – a warning will be logged if this happens.
+    allow_repeated_speaker: ${allow_repeated_speaker}
+    # int – The maximum number of attempts to select a speaker using the model. Defaults to 3.
+    #   If the model fails to select a speaker after the maximum number of attempts, the previous speaker will be used if available,
+    #   otherwise the first participant will be used.
+    max_selector_attempts: ${max_selector_attempts}
+    # Callable[[Sequence[BaseAgentEvent | BaseChatMessage]], str | None], Callable[[Sequence[BaseAgentEvent | BaseChatMessage]], Awaitable[str | None]]
+    #   – A custom selector function that takes the conversation history and returns the name of the next speaker.
+    #   If provided, this function will be used to override the model to select the next speaker.
+    #   If the function returns None, the model will be used to select the next speaker.
+    selector_func: ${selector_func}
+    # Callable[[Sequence[BaseAgentEvent | BaseChatMessage]], List[str]], Callable[[Sequence[BaseAgentEvent | BaseChatMessage]], Awaitable[List[str]]]
+    #   – A custom function that takes the conversation history and returns a filtered list of candidates for the next speaker selection using model.
+    #   If the function returns an empty list or None, SelectorGroupChat will raise a ValueError. This function is only used if selector_func is not set.
+    #   The allow_repeated_speaker will be ignored if set.
+    candidate_func: ${candidate_func}
+    # List[type[BaseAgentEvent | BaseChatMessage]] – A list of custom message types that will be used in the group chat.
+    #   If you are using custom message types or your agents produces custom message types, you need to specify them here.
+    #   Make sure your custom message types are subclasses of BaseAgentEvent or BaseChatMessage.
+    custom_message_types: ${custom_message_types}
+    # bool – Whether to emit team events through BaseGroupChat.run_stream(). Defaults to False.
+    emit_team_events: ${emit_team_events}
+    # bool – Whether to use streaming for the model client. (This is useful for reasoning models like QwQ). Defaults to False.
+    model_client_streaming: ${model_client_streaming}
+
+magentic:
+  # A team that runs a group chat with participants managed by the MagenticOneOrchestrator.
+  # The orchestrator handles the conversation flow, ensuring that the task is completed efficiently by managing the participants’ interactions.
+  # The orchestrator is based on the Magentic-One architecture, which is a generalist multi-agent system for solving complex tasks (see references below).
+  class: autogen_agentchat.teams.MagenticOneGroupChat
+  params:
+    # List[ChatAgent] – The participants in the group chat.
+    participants: ${participants}
+    # ChatCompletionClient – The model client used for generating responses.
+    model_client: ${model_client}
+    # TerminationCondition – The termination condition for the group chat. Defaults to None.
+    #   Without a termination condition, the group chat will run based on the orchestrator logic or until the maximum number of turns is reached.
+    termination_condition: ${termination_condition}
+    # int – The maximum number of turns in the group chat before stopping. Defaults to 20.
+    max_turns: ${max_turns}
+    # int – The maximum number of stalls allowed before re-planning. Defaults to 3.
+    max_stalls: ${max_stalls}
+    # str – The LLM prompt used to generate the final answer or response from the team’s transcript.
+    #   A default (sensible for GPT-4o class models) is provided.
+    final_answer_prompt: ${final_answer_prompt}
+    # List[type[BaseAgentEvent | BaseChatMessage]] – A list of custom message types that will be used in the group chat.
+    #   If you are using custom message types or your agents produces custom message types, you need to specify them here.
+    #   Make sure your custom message types are subclasses of BaseAgentEvent or BaseChatMessage.
+    custom_message_types: ${custom_message_types}
+    # bool – Whether to emit team events through BaseGroupChat.run_stream(). Defaults to False.
+    emit_team_events: ${emit_team_events}
+
+swarm:
+  # A group chat team that selects the next speaker based on handoff message only.
+  # The first participant in the list of participants is the initial speaker.
+  #   The next speaker is selected based on the HandoffMessage message sent by the current speaker.
+  #   If no handoff message is sent, the current speaker continues to be the speaker.
+  class: autogen_agentchat.teams.Swarm
+  params:
+    # List[ChatAgent] – The agents participating in the group chat. The first agent in the list is the initial speaker.
+    participants: ${participants}
+    # TerminationCondition – The termination condition for the group chat. Defaults to None.
+    #   Without a termination condition, the group chat will run indefinitely.
+    termination_condition: ${termination_condition}
+    # int – The maximum number of turns in the group chat before stopping. Defaults to None, meaning no limit.
+    max_turns: ${max_turns}
+    # List[type[BaseAgentEvent | BaseChatMessage]] – A list of custom message types that will be used in the group chat.
+    #   If you are using custom message types or your agents produces custom message types, you need to specify them here.
+    #   Make sure your custom message types are subclasses of BaseAgentEvent or BaseChatMessage.
+    custom_message_types: ${custom_message_types}
+    # bool – Whether to emit team events through BaseGroupChat.run_stream(). Defaults to False.
+    emit_team_events: ${emit_team_events}
