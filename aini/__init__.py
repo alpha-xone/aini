@@ -3,5 +3,5 @@
 from aini.builder import aini
 from aini.viewer import aview, afunc
 
-__version__ = '0.1.8'
+__version__ = '0.1.9'
 __all__ = ['aini', 'aview', 'afunc']
