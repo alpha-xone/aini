@@ -1,6 +1,5 @@
 defaults:
   session_state: {}
-  debug_mode: false
 
 workflow:
   class: agno.workflow.Workflow
@@ -25,4 +24,4 @@ workflow:
     extra_data: ${extra_data}
 
     # --- Debug & Monitoring ---
-    debug_mode: ${debug_mode}
+    debug_mode: ${debug_mode|false}

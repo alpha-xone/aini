@@ -2,59 +2,6 @@
 # so that you don't need to append a list of parameters every time you create
 # agents, while keep the flexility of modifying the parameters for each agent.
 
-defaults:
-  add_context: false
-  resolve_context: true
-
-  enable_agentic_memory: false
-  enable_user_memories: false
-  enable_session_summaries: false
-
-  add_history_to_messages: false
-  num_history_runs: 3
-
-  add_references: false
-  references_format: json
-
-  show_tool_calls: true
-
-  reasoning: false
-  reasoning_min_steps: 1
-  reasoning_max_steps: 10
-
-  read_chat_history: false
-  search_knowledge: true
-  update_knowledge: false
-  read_tool_call_history: false
-
-  system_message_role: system
-  create_default_system_message: true
-
-  markdown: false
-  add_datetime_to_instructions: false
-  add_state_in_messages: false
-
-  user_message_role: user
-  create_default_user_message: true
-
-  retries: 0
-  delay_between_retries: 1
-  exponential_backoff: false
-
-  parse_response: true
-
-  use_json_mode: false
-
-  stream_intermediate_steps: false
-
-  respond_directly: false
-  add_transfer_instructions: true
-  team_response_separator: '\n'
-
-  debug_mode: false
-  monitoring: false
-  telemetry: true
-
 agent:
   class: agno.agent.Agent
   params:
@@ -79,42 +26,42 @@ agent:
     # Context available for tools and prompt functions
     context: ${context}
     # If True, add the context to the user prompt
-    add_context: ${add_context}
+    add_context: ${add_context|false}
     # If True, resolve the context (i.e. call any functions in the context) before running the agent
-    resolve_context: ${resolve_context}
+    resolve_context: ${resolve_context|true}
 
     # --- Agent Memory ---
     memory: ${memory}
     # Enable the agent to manage memories of the user
-    enable_agentic_memory: ${enable_agentic_memory}
+    enable_agentic_memory: ${enable_agentic_memory|false}
     # If True, the agent creates/updates user memories at the end of runs
-    enable_user_memories: ${enable_user_memories}
+    enable_user_memories: ${enable_user_memories|false}
     # If True, the agent adds a reference to the user memories in the response
     add_memory_references: ${add_memory_references}
     # If True, the agent creates/updates session summaries at the end of runs
-    enable_session_summaries: ${enable_session_summaries}
+    enable_session_summaries: ${enable_session_summaries|false}
     # If True, the agent adds a reference to the session summaries in the response
     add_session_summary_references: ${add_session_summary_references}
 
     # --- Agent History ---
     # add_history_to_messages=true adds messages from the chat history to the messages list sent to the Model.
-    add_history_to_messages: ${add_history_to_messages}
+    add_history_to_messages: ${add_history_to_messages|false}
     # Deprecated in favor of num_history_runs: Number of historical responses to add to the messages
     num_history_responses: ${num_history_responses}
     # Number of historical runs to include in the messages
-    num_history_runs: ${num_history_runs}
+    num_history_runs: ${num_history_runs|3}
 
     # --- Agent Knowledge ---
     knowledge: ${knowledge}
     # Enable RAG by adding references from AgentKnowledge to the user prompt.
-    add_references: ${add_references}
+    add_references: ${add_references|false}
     # Retrieval function to get references
     # This function, if provided, is used instead of the default search_knowledge function
     # Signature:
     # def retriever(agent: Agent, query: str, num_documents: Optional[int], **kwargs) -> Optional[list[dict]]:
     #     ...
     retriever: ${retriever}
-    references_format: ${references_format}
+    references_format: ${references_format|json}
 
     # --- Agent Storage ---
     storage: ${storage}
@@ -126,7 +73,7 @@ agent:
     # Tools are functions the model may generate JSON inputs for.
     tools: ${tools}
     # Show tool calls in Agent response.
-    show_tool_calls: ${show_tool_calls}
+    show_tool_calls: ${show_tool_calls|true}
     # Maximum number of tool calls allowed.
     tool_call_limit: ${tool_call_limit}
     # Controls which (if any) tool is called by the model.
@@ -142,30 +89,30 @@ agent:
 
     # --- Agent Reasoning ---
     # Enable reasoning by working through the problem step by step.
-    reasoning: ${reasoning}
+    reasoning: ${reasoning|false}
     reasoning_model: ${reasoning_model}
     reasoning_agent: ${reasoning_agent}
-    reasoning_min_steps: ${reasoning_min_steps}
-    reasoning_max_steps: ${reasoning_max_steps}
+    reasoning_min_steps: ${reasoning_min_steps|1}
+    reasoning_max_steps: ${reasoning_max_steps|10}
 
     # --- Default tools ---
     # Add a tool that allows the Model to read the chat history.
-    read_chat_history: ${read_chat_history}
+    read_chat_history: ${read_chat_history|false}
     # Add a tool that allows the Model to search the knowledge base (aka Agentic RAG)
     # Added only if knowledge is provided.
-    search_knowledge: ${search_knowledge}
+    search_knowledge: ${search_knowledge|true}
     # Add a tool that allows the Model to update the knowledge base.
-    update_knowledge: ${update_knowledge}
+    update_knowledge: ${update_knowledge|false}
     # Add a tool that allows the Model to get the tool call history.
-    read_tool_call_history: ${read_tool_call_history}
+    read_tool_call_history: ${read_tool_call_history|false}
 
     # --- System message settings ---
     # Provide the system message as a string or function
     system_message: ${system_message}
     # Role for the system message
-    system_message_role: ${system_message_role}
+    system_message_role: ${system_message_role|system}
     # If True, create a default system message using agent settings and use that
-    create_default_system_message: ${create_default_system_message}
+    create_default_system_message: ${create_default_system_message|true}
 
     # --- Settings for building the default system message ---
     # A description of the Agent that is added to the start of the system message.
@@ -179,16 +126,16 @@ agent:
     # Additional context added to the end of the system message.
     additional_context: ${additional_context}
     # If markdown=true, add instructions to format the output using markdown
-    markdown: ${markdown}
+    markdown: ${markdown|true}
     # If True, add the agent name to the instructions
     add_name_to_instructions: ${add_name_to_instructions}
     # If True, add the current datetime to the instructions to give the agent a sense of time
     # This allows for relative times like "tomorrow" to be used in the prompt
-    add_datetime_to_instructions: ${add_datetime_to_instructions}
+    add_datetime_to_instructions: ${add_datetime_to_instructions|false}
     # Allows for custom timezone for datetime instructions following the TZ Database format (e.g. "Etc/UTC")
     timezone_identifier: ${timezone_identifier}
     # If True, add the session state variables in the user and system messages
-    add_state_in_messages: ${add_state_in_messages}
+    add_state_in_messages: ${add_state_in_messages|false}
 
     # --- Extra Messages ---
     # A list of extra messages added after the system message and before the user message.
@@ -201,28 +148,28 @@ agent:
     # Note: this will ignore the message sent to the run function
     user_message: ${user_message}
     # Role for the user message
-    user_message_role: ${user_message_role}
+    user_message_role: ${user_message_role|user}
     # If True, create a default user message using references and chat history
-    create_default_user_message: ${create_default_user_message}
+    create_default_user_message: ${create_default_user_message|true}
 
     # --- Agent Response Settings ---
     # Number of retries to attempt
-    retries: ${retries}
+    retries: ${retries|0}
     # Delay between retries (in seconds)
-    delay_between_retries: ${delay_between_retries}
+    delay_between_retries: ${delay_between_retries|1}
     # Exponential backoff: if True, the delay between retries is doubled each time
-    exponential_backoff: ${exponential_backoff}
+    exponential_backoff: ${exponential_backoff|false}
 
     # --- Agent Response Model Settings ---
     # Provide a response model to get the response as a Pydantic model
     response_model: ${response_model}
     # If True, the response from the Model is converted into the response_model
     # Otherwise, the response is returned as a JSON string
-    parse_response: ${parse_response}
+    parse_response: ${parse_response|true}
     # Use model enforced structured_outputs if supported (e.g. OpenAIChat)
     structured_outputs: ${structured_outputs}
     # If `response_model` is set, sets the response mode of the model, i.e. if the model should explicitly respond with a JSON object instead of a Pydantic model
-    use_json_mode: ${use_json_mode}
+    use_json_mode: ${use_json_mode|false}
     # Save the response to a file
     save_response_to_file: ${save_response_to_file}
 
@@ -230,7 +177,7 @@ agent:
     # Stream the response from the Agent
     stream: ${stream}
     # Stream the intermediate steps from the Agent
-    stream_intermediate_steps: ${stream_intermediate_steps}
+    stream_intermediate_steps: ${stream_intermediate_steps|false}
 
     # --- Agent Team ---
     team: ${team}
@@ -241,12 +188,12 @@ agent:
     role: ${role}
     # If this Agent is part of a team, this member agent will respond directly to the user
     # instead of passing the response to the leader agent
-    respond_directly: ${respond_directly}
+    respond_directly: ${respond_directly|false}
     # --- Transfer instructions ---
     # Add instructions for transferring tasks to team members
-    add_transfer_instructions: ${add_transfer_instructions}
+    add_transfer_instructions: ${add_transfer_instructions|true}
     # Separator between responses from the team
-    team_response_separator: ${team_response_separator}
+    team_response_separator: ${team_response_separator|"\n"}
 
     # # Optional team session ID, set by the team leader agent.
     # team_session_id: ${team_session_id}
@@ -257,9 +204,9 @@ agent:
 
     # --- Debug & Monitoring ---
     # Enable debug logs
-    debug_mode: ${debug_mode}
+    debug_mode: ${debug_mode|false}
     # monitoring=True logs Agent information to agno.com for monitoring
-    monitoring: ${monitoring}
+    monitoring: ${monitoring|false}
     # telemetry=True logs minimal telemetry for analytics
     # This helps us improve the Agent and provide better support
-    telemetry: ${telemetry}
+    telemetry: ${telemetry|true}

@@ -1,7 +1,3 @@
-defaults:
-  model_client_stream: false
-  reflect_on_tool_use: false
-
 assistant:
   # An agent that provides assistance with tool use.
   class: autogen_agentchat.agents.AssistantAgent
@@ -9,7 +5,7 @@ assistant:
     # str: the name of the agent.
     name: ${name}
     # ChatCompletionClient: the model client to use for inference.
-    model_client: ${model_client}
+    model_client: ${model_client|client}
     # List[BaseTool[Any, Any]  | Callable[..., Any] | Callable[..., Awaitable[Any]]]: Tthe tools to register with the agent.
     tools: ${tools}
     # Workbench: the workbench to use for the agent.
@@ -35,12 +31,12 @@ assistant:
     #   :meth:`on_messages_stream` and :meth:`BaseChatAgent.run_stream` methods will also
     #   yield :class:`~autogen_agentchat.messages.ModelClientStreamingChunkEvent`
     #   messages as the model client produces chunks of response. Defaults to `False`.
-    model_client_stream: ${model_client_stream}
+    model_client_stream: ${model_client_stream|false}
     # bool: if `True`, the agent will make another model inference using the tool call and result
     #   to generate a response. If `False`, the tool call result will be returned as the response.
     #   By default, if `output_content_type` is set, this will be `True`;
     #   if `output_content_type` is not set, this will be `False`.
-    reflect_on_tool_use: ${reflect_on_tool_use}
+    reflect_on_tool_use: ${reflect_on_tool_use|false}
     # type[BaseModel]: the output content type for :class:`~autogen_agentchat.messages.StructuredMessage` response as a Pydantic model.
     #   This will be used with the model client to generate structured output.
     #   If this is set, the agent will respond with a :class:`~autogen_agentchat.messages.StructuredMessage`

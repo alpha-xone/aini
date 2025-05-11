@@ -1,10 +1,7 @@
-defaults:
-  buffer_size: 10
-
 buffered:
   class: autogen_core.model_context.BufferedChatCompletionContext
   params:
-    buffer_size: ${buffer_size}
+    buffer_size: ${buffer_size|10}
     initial_messages: ${initial_messages}
 
 token:
