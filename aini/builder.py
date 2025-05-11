@@ -188,6 +188,7 @@ def aini(
     akey: Optional[str] = None,
     base_module: Optional[str] = None,
     file_type: Literal['yaml', 'json'] = 'yaml',
+    araw: bool = False,
     **kwargs,
 ) -> Union[Any, Dict[str, Any]]:
     """
@@ -200,12 +201,16 @@ def aini(
         akey: Optional key to select one instance of the YAML structure.
         base_module: Base module for resolving relative imports.
             If not provided, derived from the parent folder of this builder file.
-        kwargs: Variables for ${VAR} substitution.
+        file_type: Format of the configuration file ('yaml' or 'json').
+        araw: If True, returns the resolved configuration without building objects,
+               allowing inspection of the data with variables substituted.
+        **kwargs: Variables for ${VAR} substitution.
 
     Returns:
-        - If akey is provided, returns the instance at config[akey].
-        - If YAML has exactly one top-level key (and akey is None), returns its instance.
-        - If YAML has multiple top-level keys (and akey is None), returns a dict mapping each key to its instance.
+        - If araw=True: Returns the resolved configuration with variables substituted.
+        - If akey is provided: Returns the instance at config[akey].
+        - If YAML has exactly one top-level key (and akey is None): Returns its instance.
+        - If YAML has multiple top-level keys (and akey is None): Returns a dict mapping each key to its instance.
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     default_module = os.path.basename(os.path.dirname(script_dir))
@@ -248,8 +253,16 @@ def aini(
         raise ValueError(f'Invalid {file_type} structure: {file_path} - required dict at top level')
 
     # Prepare and resolve variables
-    default_vars = raw_config.pop('defaults', {})
+    default_vars = raw_config.pop('defaults', {}) if 'defaults' in raw_config else {}
     _config_ = resolve_vars(raw_config, kwargs, default_vars)
+
+    # If araw is enabled, return the resolved configuration without building
+    if araw:
+        if akey:
+            if akey not in _config_:
+                raise KeyError(f"akey '{akey}' not found in configuration")
+            return _config_[akey]
+        return _config_
 
     if isinstance(_config_, dict):
         # Select subset if akey given
@@ -270,4 +283,4 @@ def aini(
         return instances
 
     else:
-        return build_from_config(_config_)
+        return build_from_config(_config_, base_module)

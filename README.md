@@ -10,6 +10,22 @@ Make **AI** class **ini**tialization easy with auto-imports.
 pip install aini
 ```
 
+## Why aini?
+
+- Simplified Initialization: Configure complex AI components with clean YAML files
+- Variable Substitution: Use environment variables and defaults for sensitive values
+- Auto-Imports: No need for multiple import statements
+- Debugging Tools: Inspect objects with aview for better debugging
+- Reusable Configs: Share configurations across projects
+
+## Core Features
+
+### Main Components
+
+- aini(): Loads and instantiates objects from configuration files
+- aview(): Visualizes complex nested objects for debugging
+- afunc(): Lists available methods on an object
+
 ## Usage
 
 ### [Autogen](https://github.com/microsoft/autogen)
@@ -34,7 +50,7 @@ aview(ans)
   'messages': [
     {'source': 'user', 'content': 'What is your name', 'type': 'TextMessage'},
     {
-      'source': 'ds',
+      'source': 'deepseek',
       'models_usage <autogen_core.models._types.RequestUsage>': {
         'prompt_tokens': 32,
         'completion_tokens': 17
@@ -54,7 +70,7 @@ aview(agent._model_context, inc_=True, max_depth=5)
     {'content': 'What is your name', 'source': 'user', 'type': 'UserMessage'},
     {
       'content': 'My name is DeepSeek Chat! 😊 How can I assist you today?',
-      'source': 'ds',
+      'source': 'deepseek',
       'type': 'AssistantMessage'
     }
   ]
@@ -110,4 +126,83 @@ aview(ans, to_file='debug/output.yaml')
 
 ```python
 memory = aini('mem0/mem0', 'mem0')
+```
+
+## Configuration File Format
+
+aini uses YAML or JSON configuration files to define class instantiation. Here's how they work:
+
+### Basic Structure
+
+```yaml
+# Optional defaults section for fallback values
+defaults:
+  api_key: "default-key-value"
+  temperature: 0.7
+
+# Component definition
+my_component:
+  class: "package.module.ClassName"  # Fully qualified class path
+  params:                           # Parameters passed to constructor
+    param1: "value1"
+    param2: 42
+    param3: ${ENVIRONMENT_VAR|fallback}  # Variable substitution
+
+# Nested components
+nested_example:
+  class: "package.module.ParentClass"
+  params:
+    name: "parent"
+    child:
+      class: "package.module.ChildClass"  # Nested class instantiation
+      params:
+        name: "child"
+```
+
+### Variable Substitution
+
+`aini` supports variable substitution with the `${var}` syntax:
+
+```yaml
+model_config:
+  class: "openai.OpenAI"
+  params:
+    api_key: ${OPENAI_API_KEY}  # Uses environment variable
+    model: ${model|'gpt-4'}     # Uses input parameter or default 'gpt-4'
+    temperature: ${temp|0.7}    # Uses input parameter or default 0.7
+```
+
+### Variable resolution priority:
+
+1. Input variables (passed as kwargs to `aini()`)
+2. Environment variables
+3. Default variables from the `defaults` section
+4. Fallback values after the pipe `|` character
+
+### Custom Initialization Methods
+
+By default, aini uses the class constructor (`__init__`), but you can specify custom initialization methods:
+
+```yaml
+singleton_instance:
+  class: "package.module.Singleton"
+  init: "get_instance"  # Call the get_instance() class method instead of __init__
+  params:
+    config: "some_config"
+```
+
+## Advanced Features
+
+### Raw Configuration Access
+
+Use the `araw` parameter to get the resolved configuration without building objects:
+
+```python
+# Get raw configuration with variables resolved
+config = aini('openai/model_config', araw=True)
+print(config)
+
+# Get specific component configuration
+model_config = aini('openai/model_config', akey='gpt4', araw=True)
+print(model_config)
 ```
