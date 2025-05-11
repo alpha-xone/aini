@@ -95,7 +95,7 @@ def filter_instance_dict(
         dict or list or value: A filtered dictionary, list, or value with non-empty elements.
     """
     # Stop recursion if we've reached max depth for private attributes
-    if inc_ and depth >= max_depth:
+    if inc_ and depth > max_depth:
         if hasattr(instance, '__class__'):
             return f"<{instance.__class__.__module__}.{instance.__class__.__name__}> (max depth reached)"
         return str(instance)
