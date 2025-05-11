@@ -1,7 +1,8 @@
+import re
 import importlib
 import json
 import os
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union, Match
 
 import yaml
 
@@ -26,6 +27,76 @@ def import_class(full_class_path: str, base_module: Optional[str] = None) -> Any
     return getattr(module, class_name)
 
 
+def resolve_var_match(match: Match, input_vars: Dict[str, Any], default_vars: Dict[str, Any]) -> Any:
+    """
+    Resolve a single variable match, handling alternatives with | operator.
+    Returns the resolved value with appropriate type.
+    """
+    var_expr = match.group(1)
+    is_full_match = match.group(0) == match.string
+
+    # Process alternatives (using | operator)
+    if '|' in var_expr:
+        alternatives = var_expr.split('|')
+        for alt in alternatives:
+            alt = alt.strip()
+
+            # Handle boolean literals
+            if alt.lower() == 'true':
+                return True if is_full_match else 'True'
+            elif alt.lower() == 'false':
+                return False if is_full_match else 'False'
+
+            # Handle numeric literals
+            if alt.isdigit():
+                return int(alt) if is_full_match else alt
+            elif alt.replace('.', '', 1).isdigit() and alt.count('.') == 1:
+                return float(alt) if is_full_match else alt
+
+            # Handle quoted literals
+            if (alt.startswith('"') and alt.endswith('"')) or (alt.startswith("'") and alt.endswith("'")):
+                return alt[1:-1]  # Return the literal without quotes
+
+            # Try variables in priority order
+            if alt in input_vars:
+                value = input_vars[alt]
+                return value if is_full_match else str(value)
+            elif alt in os.environ:
+                env_val = os.environ[alt]
+                # Handle boolean environment variables
+                if env_val.lower() == 'true':
+                    return True if is_full_match else 'True'
+                elif env_val.lower() == 'false':
+                    return False if is_full_match else 'False'
+                return env_val
+            elif alt in default_vars:
+                value = default_vars[alt]
+                return value if is_full_match else str(value)
+
+        # No alternatives resolved
+        return None if is_full_match else 'None'
+
+    # Handle single variable (no | operator)
+    var_name = var_expr
+    if var_name in input_vars:
+        value = input_vars[var_name]
+        return value if is_full_match else str(value)
+    elif var_name in os.environ:
+        env_val = os.environ[var_name]
+        # Handle boolean environment variables
+        if env_val.lower() == 'true':
+            return True if is_full_match else 'True'
+        elif env_val.lower() == 'false':
+            return False if is_full_match else 'False'
+        return env_val
+    elif var_name in default_vars:
+        value = default_vars[var_name]
+        return value if is_full_match else str(value)
+
+    # Variable not found
+    return None if is_full_match else 'None'
+
+
 def resolve_vars(
     cfg: Union[Dict[str, Any], List[Any], Any],
     input_vars: Dict[str, Any],
@@ -35,43 +106,39 @@ def resolve_vars(
     Recursively resolve ${VAR} placeholders in strings using input_vars, OS environment, and default_vars.
     Priority: input_vars > os.environ > default_vars > None.
 
+    Supports OR operations with pipe symbol: ${VAR1|VAR2|"default_value"}
+    - Each alternative is tried in order until one resolves successfully
+    - Literal values can be included with quotes: ${VAR|"default"}
+    - Lists and objects can be referenced by variable name: ${tools|empty_tools}
+    - Boolean literals "true" and "false" are converted to Python bool values
+    - Numeric literals are converted to int or float as appropriate
+
     If the entire string is ${VAR}, the resolved value is injected as-is (can be object, list, etc.).
     """
     if isinstance(cfg, dict):
-        return {
-            key: resolve_vars(val, input_vars, default_vars) for key, val in cfg.items()
-        }
+        return {key: resolve_vars(val, input_vars, default_vars) for key, val in cfg.items()}
+
     if isinstance(cfg, list):
         return [resolve_vars(item, input_vars, default_vars) for item in cfg]
-    if isinstance(cfg, str):
-        if cfg.startswith('${') and cfg.endswith('}') and cfg.count('${') == 1:
-            var_name = cfg[2:-1]
-            if var_name in input_vars:
-                return input_vars[var_name]
-            elif var_name in os.environ:
-                return os.environ[var_name]
-            return default_vars.get(var_name, None)
 
-        parts = []
-        while '${' in cfg:
-            before, _, rest = cfg.partition('${')
-            var_name, sep, after = rest.partition('}')
-            if not sep:
-                parts.append(before + '${' + rest)
-                break
-            parts.append(before)
-            if var_name in input_vars:
-                parts.append(str(input_vars[var_name]))
-            elif var_name in os.environ:
-                parts.append(str(os.environ[var_name]))
-            elif var_name in default_vars:
-                parts.append(str(default_vars[var_name]))
-            else:
-                parts.append('None')
-            cfg = after
-        parts.append(cfg)
-        return ''.join(parts)
-    return cfg
+    if not isinstance(cfg, str):
+        return cfg
+
+    # Pattern to match ${var} or ${var|alt1|alt2}
+    pattern = r'\${([^}]+)}'
+
+    # Check if the entire string is a variable reference
+    match = re.match(f'^{pattern}$', cfg)
+    if match:
+        # Return the resolved value with its original type
+        return resolve_var_match(match, input_vars, default_vars)
+
+    # Handle embedded variables by replacing them with string representations
+    def replace_func(match):
+        resolved = resolve_var_match(match, input_vars, default_vars)
+        return str(resolved) if resolved is not None else "None"
+
+    return re.sub(pattern, replace_func, cfg)
 
 
 def build_from_config(
@@ -178,9 +245,7 @@ def aini(
             raise ValueError(f'Unsupported file type: {file_type}')
 
     if not isinstance(raw_config, dict):
-        raise ValueError(
-            f'Invalid {file_type} structure: {file_path} - required dict at top level'
-        )
+        raise ValueError(f'Invalid {file_type} structure: {file_path} - required dict at top level')
 
     # Prepare and resolve variables
     default_vars = raw_config.pop('defaults', {})

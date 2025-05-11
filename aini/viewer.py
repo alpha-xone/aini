@@ -29,62 +29,162 @@ def custom_serializer(obj: Any) -> str:
     """
     if isinstance(obj, datetime):
         return obj.isoformat()  # Format datetime objects
+    if isinstance(obj, bytes):
+        try:
+            return obj.decode('utf-8')  # Try to decode bytes to string
+        except UnicodeDecodeError:
+            return str(obj)  # Fallback if it's not valid UTF-8
     return str(obj)  # Fallback: Convert the object to a string
 
 
-def filter_instance_dict(instance, exclude_keys: Optional[List[str]] = None):
+def is_empty(obj):
+    """
+    Check if an object is considered "empty" (None, 0, '', empty collection, etc.).
+    Safely handles objects that might override comparison operators.
+
+    Args:
+        obj: The object to check for emptiness
+
+    Returns:
+        bool: True if the object is considered empty, False otherwise
+    """
+    try:
+        # None is always considered empty
+        if obj is None:
+            return True
+
+        # Numbers: 0, 0.0 are considered empty
+        if isinstance(obj, (int, float)) and obj == 0:
+            return True
+
+        # Empty strings are considered empty
+        if isinstance(obj, str) and obj == '':
+            return True
+
+        # Empty collections are considered empty
+        if isinstance(obj, (list, tuple, dict, set)) and len(obj) == 0:
+            return True
+
+        # Not empty
+        return False
+    except Exception:
+        # If we can't check (e.g., object has custom __eq__ that fails),
+        # we assume it's not empty to be safe
+        return False
+
+
+def filter_instance_dict(
+    instance,
+    exc_keys: Optional[List[str]] = None,
+    inc_: bool = False,
+    depth: int = 0,
+    max_depth: int = 3,
+):
     """
     Recursively filter the __dict__ of a class instance, ignoring empty values.
     If an element is a list, apply the filter to each element recursively.
 
     Args:
         instance: The class instance or value to be filtered.
-        exclude_keys: Optional list of keys to exclude from the output.
+        exc_keys: Optional list of keys to exclude from the output.
+        inc_: Whether to include attributes starting with a single underscore.
+        depth: Current recursion depth.
+        max_depth: Maximum recursion depth, especially for private attributes.
 
     Returns:
         dict or list or value: A filtered dictionary, list, or value with non-empty elements.
     """
+    # Stop recursion if we've reached max depth for private attributes
+    if inc_ and depth >= max_depth:
+        if hasattr(instance, '__class__'):
+            return f"<{instance.__class__.__module__}.{instance.__class__.__name__}> (max depth reached)"
+        return str(instance)
+
+    # Handle None explicitly
+    if instance is None:
+        return None
+
+    # Handle basic types that aren't iterable
+    if isinstance(instance, (int, float, bool, str)):
+        return instance
+
+    # Handle bytes
+    if isinstance(instance, bytes):
+        try:
+            return instance.decode('utf-8')
+        except UnicodeDecodeError:
+            return str(instance)
+
     if isinstance(instance, (list, tuple)):
         # Recursively filter each element in the list
         filtered_list = [
-            filter_instance_dict(item, exclude_keys)
+            filter_instance_dict(item, exc_keys, inc_, depth + 1, max_depth)
             for item in instance
-            if item not in (None, 0, '', [], {}, set(), ())  # Ignore empty values
+            if not is_empty(item)  # Use our helper function
         ]
         # Remove the list if all elements are empty
-        return filtered_list if any(filtered_list) else None
+        return filtered_list if filtered_list else None
 
     if hasattr(instance, '__dict__'):
         if isinstance(instance.__dict__, dict):
-            return filter_instance_dict(instance.__dict__, exclude_keys)
+            return filter_instance_dict(instance.__dict__, exc_keys, inc_, depth + 1, max_depth)
         elif callable(instance.__dict__):
-            return filter_instance_dict(instance.__dict__(), exclude_keys)
+            try:
+                dict_result = instance.__dict__()
+                if isinstance(dict_result, dict):
+                    return filter_instance_dict(dict_result, exc_keys, inc_, depth + 1, max_depth)
+                return dict_result  # Return as is if not a dict
+            except Exception:
+                return str(instance)  # Fallback: just show the string representation
 
     if isinstance(instance, dict):
         # Recursively filter the __dict__ of the instance
         filtered_dict = {}
         for key, value in instance.items():
-            if key.startswith('_') or 'api_key' in key or key in (exclude_keys or []):
+            # Skip keys starting with double underscore regardless of inc_ setting
+            if key.startswith('__'):
                 continue
-            if value in (None, 0, '', [], {}, set(), ()):
+
+            # Skip keys starting with single underscore unless inc_ is True
+            if key.startswith('_') and not inc_:
                 continue
-            sub = filter_instance_dict(value, exclude_keys)
-            if sub in (None, 0, '', [], {}, set(), ()):
+
+            # Skip api_keys and keys in exclude keys
+            if 'api_key' in key or key in (exc_keys or []):
                 continue
+
+            # Skip empty values
+            if is_empty(value):
+                continue
+
+            # For private attributes, respect depth limit more strictly
+            next_depth = depth + 1 if key.startswith('_') else depth
+
+            sub = filter_instance_dict(value, exc_keys, inc_, next_depth, max_depth)
+
+            # Skip if the filtered result is empty
+            if is_empty(sub):
+                continue
+
+            # Only add class info to key if it's an object
             if hasattr(value, '__class__') and value.__class__.__module__ != 'builtins':
                 key = f'{key} <{value.__class__.__module__}.{value.__class__.__name__}>'
-            filtered_dict[key] = sub
-        # Remove the dictionary if all elements are empty
-        return filtered_dict if any(filtered_dict.values()) else None
 
-    # Return the value as is if it's not a list or class instance
-    return instance
+            filtered_dict[key] = sub
+
+        # Remove the dictionary if all elements are empty
+        return filtered_dict if filtered_dict else None
+
+    # Default case: return string representation
+    return str(instance)
 
 
 def aview(
     instance,
     to_file: Optional[str] = None,
-    exclude_keys: Optional[List[str]] = None,
+    exc_keys: Optional[List[str]] = None,
+    inc_: bool = False,
+    max_depth: int = 3,
 ):
     """
     Display the __dict__ of a class instance using rich.pprint, ignoring empty values.
@@ -92,13 +192,16 @@ def aview(
     Args:
         instance: The class instance whose __dict__ is to be displayed.
         to_file: Optional file path to save the filtered dictionary in JSON format.
-        exclude_keys: Optional list of keys to exclude from the output.
+        exc_keys: Optional list of keys to exclude from the output.
+        inc_: Whether to include attributes starting with a single underscore (_),
+                         but still exclude double underscore attributes (__).
+        max_depth: Maximum recursion depth for private attributes (default: 3).
     """
     if not hasattr(instance, '__dict__'):
         raise ValueError('The provided object does not have a __dict__ attribute.')
 
     # Recursively filter the instance's __dict__
-    filtered_dict = filter_instance_dict(instance, exclude_keys)
+    filtered_dict = filter_instance_dict(instance, exc_keys, inc_, depth=0, max_depth=max_depth)
 
     title = f'<{instance.__class__.__module__}.{instance.__class__.__name__}>'
     if to_file:

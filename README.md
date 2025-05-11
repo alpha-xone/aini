@@ -26,17 +26,13 @@ agent = aini('autogen/assistant', name='deepseek', model_client=client)
 # Run the agent
 ans = await agent.run(task='What is your name')
 
-# Display component structure
+# Display result structure
 aview(ans)
 [Output]
 <autogen_agentchat.base._task.TaskResult>
 {
   'messages': [
-    {
-      'source': 'user',
-      'content': 'What is your name',
-      'type': 'TextMessage'
-    },
+    {'source': 'user', 'content': 'What is your name', 'type': 'TextMessage'},
     {
       'source': 'ds',
       'models_usage <autogen_core.models._types.RequestUsage>': {
@@ -45,6 +41,21 @@ aview(ans)
       },
       'content': 'My name is DeepSeek Chat! 😊 How can I assist you today?',
       'type': 'TextMessage'
+    }
+  ]
+}
+
+# Display agent structure with private keys included
+aview(agent._model_context, inc_=True, max_depth=5)
+[Output]
+<autogen_core.model_context._unbounded_chat_completion_context.UnboundedChatCompletionContext>
+{
+  '_messages': [
+    {'content': 'What is your name', 'source': 'user', 'type': 'UserMessage'},
+    {
+      'content': 'My name is DeepSeek Chat! 😊 How can I assist you today?',
+      'source': 'ds',
+      'type': 'AssistantMessage'
     }
   ]
 }
