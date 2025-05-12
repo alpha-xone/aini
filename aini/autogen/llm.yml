@@ -5,6 +5,13 @@ defaults:
   ollama_client: autogen_ext.models.ollama.OllamaChatCompletionClient
   anthropic_client: autogen_ext.models.anthropic.AnthropicChatCompletionClient
   skchat_client: autogen_ext.models.semantic_kernel.SKChatCompletionAdapter
+  model_tool_json_struct_multi:
+    function_calling: true
+    json_output: true
+    vision: false
+    family: unknown
+    structured_output: true
+    multiple_system_messages: true
 
 # DeepSeek Models
 
@@ -14,12 +21,7 @@ ds:
     model: deepseek-chat
     base_url: https://api.deepseek.com/v1
     api_key: ${DEEPSEEK_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 ds-r1:
   provider: ${openai_client}
@@ -27,12 +29,7 @@ ds-r1:
     model: deepseek-reasoner
     base_url: https://api.deepseek.com/v1
     api_key: ${DEEPSEEK_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 # Silicon Flow Models
 
@@ -44,12 +41,7 @@ sf-ds:
     model: Pro/deepseek-ai/DeepSeek-V3
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 sf-ds-r1:
   provider: ${openai_client}
@@ -57,12 +49,7 @@ sf-ds-r1:
     model: Pro/deepseek-ai/DeepSeek-R1
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 ## Qwen Models
 
@@ -72,12 +59,7 @@ sf-qwen:
     model: Qwen/Qwen3-8B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 sf-qwen-14b:
   provider: ${openai_client}
@@ -85,12 +67,7 @@ sf-qwen-14b:
     model: Qwen/Qwen3-14B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 sf-qwen-30b:
   provider: ${openai_client}
@@ -98,12 +75,7 @@ sf-qwen-30b:
     model: Qwen/Qwen3-30B-A3B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}
 
 sf-qwen-32b:
   provider: ${openai_client}
@@ -111,9 +83,4 @@ sf-qwen-32b:
     model: Qwen/Qwen3-32B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
-    model_info:
-      function_calling: true
-      json_output: true
-      vision: false
-      family: unknown
-      structured_output: true
+    model_info: ${model_tool_json_struct_multi}

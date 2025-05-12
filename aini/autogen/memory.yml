@@ -1,0 +1,76 @@
+# pip install mem0ai
+
+# Cloud mem0
+
+mem0c:
+  class: autogen_ext.memory.mem0.Mem0Memory
+  params:
+    user_id: ${user_id}
+    limit: ${limit|10}
+    is_cloud: ${is_cloud|true}
+    api_key: ${MEM0_API_KEY}
+
+# Local mem0 with detailed configuration
+
+mem0:
+  class: autogen_ext.memory.mem0.Mem0Memory
+  params:
+    user_id: ${user_id}
+    limit: ${limit|10}
+    is_cloud: ${is_cloud|false}
+    api_key: ${MEM0_API_KEY}
+    config:
+      history_db_path: ${db_path|'db/histories.db'}
+      graph_store:
+        provider: neo4j
+        config:
+          url: bolt://localhost:7687
+          username: ${neo4j_user|'neo4j'}
+          password: ${neo4j_pass|'00000000'}
+      embedder:
+        provider: openai
+        config:
+          model: Pro/BAAI/bge-m3
+          openai_base_url: https://api.siliconflow.cn/v1
+          embedding_dims: 1024
+          api_key: ${SF_API_KEY}
+      embedder_yd:
+        provider: openai
+        config:
+          model: netease-youdao/bce-embedding-base_v1
+          openai_base_url: https://api.siliconflow.cn/v1
+          embedding_dims: 768
+          api_key: ${SF_API_KEY}
+      embedder_hf:
+        provider: huggingface
+        config:
+          model: sentence-transformers/all-MiniLM-L6-v2
+          embedding_dims: 384
+      vector_store:
+        provider: chroma
+        config:
+          path: ${vecdb_path|'db/memories.chroma'}
+          collection_name: ${vecdb_collection|"memories"}
+      llm:
+        provider: deepseek
+        config:
+          model: deepseek-chat
+          deepseek_base_url: https://api.deepseek.com
+          api_key: ${DEEPSEEK_API_KEY}
+      llm_qwen:
+        provider: openai
+        config:
+          model: Qwen/Qwen3-32B
+          openai_base_url: https://api.siliconflow.cn/v1
+          api_key: ${SF_API_KEY}
+
+# Local mem0 with config input
+
+mem0cfg:
+  class: autogen_ext.memory.mem0.Mem0Memory
+  params:
+    user_id: ${user_id}
+    limit: ${limit|10}
+    is_cloud: ${is_cloud|false}
+    api_key: ${MEM0_API_KEY}
+    config: ${config}

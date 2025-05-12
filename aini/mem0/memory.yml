@@ -1,22 +1,3 @@
-defaults:
-  # neo4j default values
-  NEO4J_USERNAME: neo4j
-  NEO4J_PASSWORD: '00000000'
-
-  # Storage default values
-  storage_db_file: db/storage.db
-  storage_table_name: histories
-
-  # SQLite memory default values
-  sqlite_db_file: db/memories.db
-  sqlite_table_name: memories
-
-  # Mem0 default values
-  history_db_path: db/histories.db
-  vecdb_provider: chroma
-  vecdb_path: db/memories.chroma
-  vecdb_collection: memories
-
 # Mem0 Memory Cloud Configuration
 mem0c:
   class: mem0.MemoryClient
@@ -34,20 +15,20 @@ mem0:
   init: from_config
   params:
     config_dict:
-      history_db_path: ${history_db_path}
+      history_db_path: ${history_db_path|'db/histories.db'}
       # Graph Store
       graph_store:
         provider: neo4j
         config:
           url: bolt://localhost:7687
-          username: ${NEO4J_USERNAME}
-          password: ${NEO4J_PASSWORD}
+          username: ${neo4j_user|'neo4j'}
+          password: ${neo4j_pass|'00000000'}
       # Vector Store
       vector_store:
-        provider: ${vecdb_provider}
+        provider: ${vecdb_provider|'chroma'}
         config:
-          path: ${vecdb_path}
-          collection_name: ${vecdb_collection}
+          path: ${vecdb_path|'db/memories.chroma'}
+          collection_name: ${vecdb_collection|'memories'}
       # LLM Configurations - use one of the following
       llm:
         provider: deepseek
