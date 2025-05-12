@@ -87,7 +87,7 @@ agent = aini('agno/agent', tools=[aini('agno/tools', 'google')])
 ans = agent.run('Compare MCP and A2A')
 
 # Display component structure with filtering
-aview(ans, exclude_keys=['metrics'])
+aview(ans, exc_keys=['metrics'])
 [Output]
 <agno.run.response.RunResponse>
 {
@@ -125,7 +125,7 @@ aview(ans, to_file='debug/output.yaml')
 ### [Mem0](https://mem0.ai/)
 
 ```python
-memory = aini('mem0/mem0', 'mem0')
+memory = aini('mem0/memory', 'mem0')
 ```
 
 ## Configuration File Format
@@ -159,8 +159,8 @@ mem0:
         provider: neo4j
         config:
           url: bolt://localhost:7687
-          username: ${NEO4J_USERNAME}
-          password: ${NEO4J_PASSWORD}
+          username: ${neo4j_user}
+          password: ${neo4j_pass}
 ```
 
 ### Variable Substitution
@@ -188,7 +188,6 @@ model_config:
 By default, `aini` uses the class constructor (`__init__`), but you can specify custom initialization methods:
 
 ```yaml
-nested_example:
 model_client:
   class: autogen_core.models.ChatCompletionClient
   init: load_component
