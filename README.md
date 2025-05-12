@@ -15,16 +15,16 @@ pip install aini
 - Simplified Initialization: Configure complex AI components with clean YAML files
 - Variable Substitution: Use environment variables and defaults for sensitive values
 - Auto-Imports: No need for multiple import statements
-- Debugging Tools: Inspect objects with aview for better debugging
+- Debugging Tools: Inspect objects with `aview` for better debugging
 - Reusable Configs: Share configurations across projects
 
 ## Core Features
 
 ### Main Components
 
-- aini(): Loads and instantiates objects from configuration files
-- aview(): Visualizes complex nested objects for debugging
-- afunc(): Lists available methods on an object
+- `aini()`: Loads and instantiates objects from configuration files
+- `aview()`: Visualizes complex nested objects for debugging
+- `afunc()`: Lists available methods on an object
 
 ## Usage
 
@@ -130,7 +130,7 @@ memory = aini('mem0/mem0', 'mem0')
 
 ## Configuration File Format
 
-aini uses YAML or JSON configuration files to define class instantiation. Here's how they work:
+`aini` uses YAML or JSON configuration files to define class instantiation. Here's how they work:
 
 ### Basic Structure
 
@@ -141,22 +141,26 @@ defaults:
   temperature: 0.7
 
 # Component definition
-my_component:
-  class: "package.module.ClassName"  # Fully qualified class path
-  params:                           # Parameters passed to constructor
-    param1: "value1"
-    param2: 42
-    param3: ${ENVIRONMENT_VAR|fallback}  # Variable substitution
+assistant:
+  class: autogen_agentchat.agents.AssistantAgent
+  params:
+    name: ${name}
+    model_client: ${model_client|client}
+    tools: ${tools}
 
 # Nested components
-nested_example:
-  class: "package.module.ParentClass"
+mem0:
+  class: mem0.Memory
+  init: from_config
   params:
-    name: "parent"
-    child:
-      class: "package.module.ChildClass"  # Nested class instantiation
-      params:
-        name: "child"
+    config_dict:
+      history_db_path: ${history_db_path}
+      graph_store:
+        provider: neo4j
+        config:
+          url: bolt://localhost:7687
+          username: ${NEO4J_USERNAME}
+          password: ${NEO4J_PASSWORD}
 ```
 
 ### Variable Substitution
@@ -181,14 +185,16 @@ model_config:
 
 ### Custom Initialization Methods
 
-By default, aini uses the class constructor (`__init__`), but you can specify custom initialization methods:
+By default, `aini` uses the class constructor (`__init__`), but you can specify custom initialization methods:
 
 ```yaml
-singleton_instance:
-  class: "package.module.Singleton"
-  init: "get_instance"  # Call the get_instance() class method instead of __init__
+nested_example:
+model_client:
+  class: autogen_core.models.ChatCompletionClient
+  init: load_component
   params:
-    config: "some_config"
+    model: ${model}
+    expected: ${expected}
 ```
 
 ## Advanced Features
