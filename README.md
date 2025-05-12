@@ -24,7 +24,7 @@ pip install aini
 
 - `aini()`: Loads and instantiates objects from configuration files
 - `aview()`: Visualizes complex nested objects for debugging
-- `afunc()`: Lists available methods on an object
+- `ameth()`: Lists available methods on an object
 
 ## Usage
 

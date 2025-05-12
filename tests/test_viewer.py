@@ -5,7 +5,7 @@ import pytest
 from datetime import datetime
 import tempfile
 
-from aini.viewer import is_empty, filter_instance_dict, aview, custom_serializer, afunc
+from aini.viewer import is_empty, filter_instance_dict, aview, custom_serializer, ameth
 
 
 class SimpleClass:
@@ -76,7 +76,7 @@ class RecursiveClass:
 class TestAfunc:
     def test_list_methods(self):
         obj = SimpleClass()
-        methods = afunc(obj)
+        methods = ameth(obj)
         assert "method" in methods
         assert "another_method" in methods
         assert "__init__" not in methods  # Should exclude private methods
@@ -87,7 +87,7 @@ class TestAfunc:
             x = 1
 
         obj = EmptyClass()
-        methods = afunc(obj)
+        methods = ameth(obj)
         assert methods == []
 
 

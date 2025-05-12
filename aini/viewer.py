@@ -8,9 +8,9 @@ from rich.console import Console
 from rich.pretty import Pretty
 
 
-def afunc(instance: Any) -> List[str]:
+def ameth(instance: Any) -> List[str]:
     """
-    Get the functions of the input instance
+    Get the methods of the input instance
 
     Returns:
         A list of method names available in the instance
