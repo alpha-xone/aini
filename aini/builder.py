@@ -194,11 +194,13 @@ def aini(
     """
     Load YAML / JSON from a file, resolve input/env/default variables, and return built class instances.
     Supports a special top-level 'defaults' block to define fallback variable values.
-    Priority: input varriables (kwargs) > os.environ > 'defaults' block in input file > None.
+    Priority: input variables (kwargs) > os.environ > 'defaults' block in input file > None.
 
     Args:
         file_path: Path to the YAML file. Relative path is working against current folder.
+                  You can specify an akey using the format 'path/to/file::key_name'.
         akey: Optional key to select one instance of the YAML structure.
+              If both 'file_path:key' syntax and akey parameter are provided, the parameter takes precedence.
         base_module: Base module for resolving relative imports.
             If not provided, derived from the parent folder of this builder file.
         file_type: Format of the configuration file ('yaml' or 'json').
@@ -214,6 +216,13 @@ def aini(
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     default_module = os.path.basename(os.path.dirname(script_dir))
+
+    # Parse file_path for colon syntax (file_path:akey)
+    if ':' in file_path and akey is None:
+        file_path, extracted_key = file_path.split('::', 1)
+        if akey is not None:
+            raise ValueError('Either inferred akey or explicit akey must be provided')
+        akey = extracted_key
 
     if base_module is None:
         base_module = default_module
@@ -268,7 +277,7 @@ def aini(
         # Select subset if akey given
         if akey:
             if akey not in _config_:
-                raise KeyError(f"akey '{akey}' not found in YAML file")
+                raise KeyError(f"akey '{akey}' not found in configuration")
             return build_from_config(_config_[akey], base_module)
 
         # No akey: handle single or multiple
