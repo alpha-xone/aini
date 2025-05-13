@@ -36,7 +36,7 @@ Use [DeepSeek](https://platform.deepseek.com/) as the model for the assistant ag
 from aini import aini, aview
 
 # Load assistant agent with DeepSeek as its model - requires DEEPSEEK_API_KEY
-client = aini('autogen/client', model=aini('autogen/llm', 'ds'))
+client = aini('autogen/client', model=aini('autogen/llm:ds'))
 agent = aini('autogen/assistant', name='deepseek', model_client=client)
 
 # Run the agent
@@ -81,7 +81,7 @@ aview(agent._model_context, inc_=True, max_depth=5)
 
 ```python
 # Load an agent with tools from configuration files
-agent = aini('agno/agent', tools=[aini('agno/tools', 'google')])
+agent = aini('agno/agent', tools=[aini('agno/tools:google')])
 
 # Run the agent
 ans = agent.run('Compare MCP and A2A')
@@ -125,7 +125,7 @@ aview(ans, to_file='debug/output.yaml')
 ### [Mem0](https://mem0.ai/)
 
 ```python
-memory = aini('mem0/memory', 'mem0')
+memory = aini('mem0/memory:mem0')
 ```
 
 ## Configuration File Format
