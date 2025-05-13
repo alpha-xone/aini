@@ -198,7 +198,7 @@ def aini(
 
     Args:
         file_path: Path to the YAML file. Relative path is working against current folder.
-                  You can specify an akey using the format 'path/to/file::key_name'.
+                  You can specify an akey using the format 'path/to/file:key_name'.
         akey: Optional key to select one instance of the YAML structure.
               If both 'file_path:key' syntax and akey parameter are provided, the parameter takes precedence.
         base_module: Base module for resolving relative imports.
@@ -206,23 +206,34 @@ def aini(
         file_type: Format of the configuration file ('yaml' or 'json').
         araw: If True, returns the resolved configuration without building objects,
                allowing inspection of the data with variables substituted.
-        **kwargs: Variables for ${VAR} substitution.
+        **kwargs: Variables for ${VAR} substitution. When returning a single instance,
+                 these are also passed to the builder for parameter overrides.
 
     Returns:
         - If araw=True: Returns the resolved configuration with variables substituted.
-        - If akey is provided: Returns the instance at config[akey].
-        - If YAML has exactly one top-level key (and akey is None): Returns its instance.
+        - If akey is provided: Returns the instance at config[akey] with kwargs applied.
+        - If YAML has exactly one top-level key (and akey is None): Returns its instance with kwargs applied.
         - If YAML has multiple top-level keys (and akey is None): Returns a dict mapping each key to its instance.
     """
     script_dir = os.path.dirname(os.path.abspath(__file__))
     default_module = os.path.basename(os.path.dirname(script_dir))
 
-    # Parse file_path for colon syntax (file_path:akey)
+    # Parse file_path for colon syntax (file_path:akey), considering Windows drive letters
     if ':' in file_path and akey is None:
-        file_path, extracted_key = file_path.split('::', 1)
-        if akey is not None:
-            raise ValueError('Either inferred akey or explicit akey must be provided')
-        akey = extracted_key
+        # Check if the colon is part of a Windows drive letter (e.g., C:)
+        parts = file_path.split(':')
+        if len(parts) > 2 or (len(parts) == 2 and len(parts[0]) > 1):
+            # This is likely a path:key format, not just a drive letter
+            # Find the last colon which is not part of a drive letter
+            last_colon_idx = file_path.rfind(':')
+
+            # Check if this colon might be part of a drive letter (e.g., C:)
+            if last_colon_idx > 1 or (last_colon_idx == 1 and not file_path[0].isalpha()):
+                # Not a drive letter colon, so this is our key separator
+                extracted_path = file_path[:last_colon_idx]
+                extracted_key = file_path[last_colon_idx + 1:]
+                file_path = extracted_path
+                akey = extracted_key
 
     if base_module is None:
         base_module = default_module
@@ -278,13 +289,31 @@ def aini(
         if akey:
             if akey not in _config_:
                 raise KeyError(f"akey '{akey}' not found in configuration")
-            return build_from_config(_config_[akey], base_module)
+            config_item = _config_[akey]
+
+            # Pass kwargs to the builder for a single instance
+            if isinstance(config_item, dict) and 'class' in config_item:
+                # Merge kwargs into params, with kwargs taking precedence
+                params = config_item.get('params', {})
+                merged_params = {**params, **kwargs}
+                config_item = {**config_item, 'params': merged_params}
+
+            return build_from_config(config_item, base_module)
 
         # No akey: handle single or multiple
         if len(_config_) == 1:
-            _, val = next(iter(_config_.items()))
+            key, val = next(iter(_config_.items()))
+
+            # Pass kwargs to the builder for a single instance
+            if isinstance(val, dict) and 'class' in val:
+                # Merge kwargs into params, with kwargs taking precedence
+                params = val.get('params', {})
+                merged_params = {**params, **kwargs}
+                val = {**val, 'params': merged_params}
+
             return build_from_config(val, base_module)
 
+        # Multiple top-level keys: build instances without passing kwargs
         instances: Dict[str, Any] = {}
         for key, val in _config_.items():
             instances[key] = build_from_config(val, base_module)
