@@ -215,7 +215,7 @@ class TestFilterInstanceDict:
     def test_depth_limiting(self):
         obj = ComplexClass()
         # Test with depth limiting on private attributes
-        filtered = filter_instance_dict(obj, inc_=True, max_depth=2)
+        filtered = filter_instance_dict(obj, inc_=True, max_depth_=2)
         # Should include private attributes but stop at level 2
         assert "_private_nested" in filtered
         assert "_level1" in filtered["_private_nested"]
@@ -321,7 +321,7 @@ class TestAview:
 
     def test_aview_nondict_object(self):
         # Test with an object that doesn't have __dict__
-        with pytest.raises(ValueError, match="does not have a __dict__ attribute"):
+        with pytest.raises(ValueError, match="not a class instance or a dictionary."):
             aview(42)
 
     def test_aview_with_exclusions(self, temp_json_file):
@@ -345,7 +345,7 @@ class TestAview:
     def test_aview_with_custom_depth(self, temp_json_file):
         obj = ComplexClass()
         # Test with a custom max_depth
-        aview(obj, to_file=temp_json_file, inc_=True, max_depth=1)
+        aview(obj, to_file=temp_json_file, inc_=True, max_depth_=1)
 
         with open(temp_json_file, 'r') as f:
             data = json.load(f)

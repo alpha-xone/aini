@@ -77,8 +77,8 @@ def filter_instance_dict(
     instance,
     exc_keys: Optional[List[str]] = None,
     inc_: bool = False,
-    depth: int = 0,
-    max_depth: int = 3,
+    depth_: int = 0,
+    max_depth_: int = 3,
 ):
     """
     Recursively filter the __dict__ of a class instance, ignoring empty values.
@@ -88,14 +88,14 @@ def filter_instance_dict(
         instance: The class instance or value to be filtered.
         exc_keys: Optional list of keys to exclude from the output.
         inc_: Whether to include attributes starting with a single underscore.
-        depth: Current recursion depth.
-        max_depth: Maximum recursion depth, especially for private attributes.
+        depth_: Current recursion depth.
+        max_depth_: Maximum recursion depth, especially for private attributes.
 
     Returns:
         dict or list or value: A filtered dictionary, list, or value with non-empty elements.
     """
     # Stop recursion if we've reached max depth for private attributes
-    if inc_ and depth > max_depth:
+    if inc_ and depth_ > max_depth_:
         if hasattr(instance, '__class__'):
             return f"<{instance.__class__.__module__}.{instance.__class__.__name__}> (max depth reached)"
         return str(instance)
@@ -118,21 +118,21 @@ def filter_instance_dict(
     if isinstance(instance, (list, tuple)):
         # Recursively filter each element in the list
         filtered_list = [
-            filter_instance_dict(item, exc_keys, inc_, depth + 1, max_depth)
+            filter_instance_dict(item, exc_keys, inc_, depth_ + 1, max_depth_)
             for item in instance
-            if not is_empty(item)  # Use our helper function
+            if not is_empty(item)
         ]
         # Remove the list if all elements are empty
         return filtered_list if filtered_list else None
 
-    if hasattr(instance, '__dict__'):
+    if hasattr(instance, '__dict__') and not isinstance(instance, dict):
         if isinstance(instance.__dict__, dict):
-            return filter_instance_dict(instance.__dict__, exc_keys, inc_, depth + 1, max_depth)
+            return filter_instance_dict(instance.__dict__, exc_keys, inc_, depth_ + 1, max_depth_)
         elif callable(instance.__dict__):
             try:
                 dict_result = instance.__dict__()
                 if isinstance(dict_result, dict):
-                    return filter_instance_dict(dict_result, exc_keys, inc_, depth + 1, max_depth)
+                    return filter_instance_dict(dict_result, exc_keys, inc_, depth_ + 1, max_depth_)
                 return dict_result  # Return as is if not a dict
             except Exception:
                 return str(instance)  # Fallback: just show the string representation
@@ -158,9 +158,9 @@ def filter_instance_dict(
                 continue
 
             # For private attributes, respect depth limit more strictly
-            next_depth = depth + 1 if key.startswith('_') else depth
+            next_depth = depth_ + 1 if key.startswith('_') else depth_
 
-            sub = filter_instance_dict(value, exc_keys, inc_, next_depth, max_depth)
+            sub = filter_instance_dict(value, exc_keys, inc_, next_depth, max_depth_)
 
             # Skip if the filtered result is empty
             if is_empty(sub):
@@ -184,10 +184,10 @@ def aview(
     to_file: Optional[str] = None,
     exc_keys: Optional[List[str]] = None,
     inc_: bool = False,
-    max_depth: int = 3,
+    max_depth_: int = 3,
 ):
     """
-    Display the __dict__ of a class instance using rich.pprint, ignoring empty values.
+    Display elements of a class instance using rich.pprint, ignoring empty values.
 
     Args:
         instance: The class instance whose __dict__ is to be displayed.
@@ -195,13 +195,13 @@ def aview(
         exc_keys: Optional list of keys to exclude from the output.
         inc_: Whether to include attributes starting with a single underscore (_),
                          but still exclude double underscore attributes (__).
-        max_depth: Maximum recursion depth for private attributes (default: 3).
+        max_depth_: Maximum recursion depth for private attributes (default: 3).
     """
-    if not hasattr(instance, '__dict__'):
-        raise ValueError('The provided object does not have a __dict__ attribute.')
+    if not (hasattr(instance, '__dict__') or isinstance(instance, dict) or isinstance(instance, list)):
+        raise ValueError('The provided object is not a class instance or a dictionary.')
 
     # Recursively filter the instance's __dict__
-    filtered_dict = filter_instance_dict(instance, exc_keys, inc_, depth=0, max_depth=max_depth)
+    filtered_dict = filter_instance_dict(instance, exc_keys, inc_, depth_=0, max_depth_=max_depth_)
 
     title = f'<{instance.__class__.__module__}.{instance.__class__.__name__}>'
     if to_file:
