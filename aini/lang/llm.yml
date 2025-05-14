@@ -1,0 +1,69 @@
+# DeepSeek
+
+ds:
+  class: langchain_deepseek.ChatDeepSeek
+  params:
+    model: deepseek-chat
+
+r1:
+  class: langchain_deepseek.ChatDeepSeek
+  params:
+    model: deepseek-reasoner
+
+# SiliconFlow
+
+## Qwen Models
+
+sf-qwen:
+  class: langchain_openai.OpenAI
+  params:
+    model: Qwen/Qwen3-8B
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-qwen-14b:
+  class: langchain_openai.OpenAI
+  params:
+    model: Qwen/Qwen3-14B
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-qwen-30b:
+  class: langchain_openai.OpenAI
+  params:
+    model: Qwen/Qwen3-30B-A3B
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+sf-qwen-32b:
+  class: langchain_openai.OpenAI
+  params:
+    model: Qwen/Qwen3-32B
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+
+## Embedding Models
+
+sf-bge:
+  class: langchain_openai.OpenAIEmbeddings
+  params:
+    model: Pro/BAAI/bge-m3
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+    dimensions: 1024
+
+sf-bge-m3:
+  class: langchain_openai.OpenAIEmbeddings
+  params:
+    model: BAAI/bge-m3
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+    dimensions: 1024
+
+sf-youdao:
+  class: langchain_openai.OpenAIEmbeddings
+  params:
+    model: netease-youdao/bce-embedding-base_v1
+    base_url: https://api.siliconflow.cn/v1
+    api_key: ${SF_API_KEY}
+    dimensions: 768

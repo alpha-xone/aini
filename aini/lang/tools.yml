@@ -1,0 +1,15 @@
+tavily:
+  class: langchain_tavily.TavilySearch
+  params:
+    name: ${name|'tavily_search'}
+    api_key: ${TAVILY_API_KEY}
+    base_url: https://api.tavily.com
+    # Literal['content', 'content_and_artifact']
+    response_format: ${response_format|'content'}
+    # Literal['basic', 'advanced']
+    search_depth: ${search_depth|'basic'}
+    # Literal['day', 'week', 'month', 'year']
+    time_range: ${time_range}
+    max_results: ${max_results|5}
+    # Literal['general', 'news', 'finance']
+    topic: ${topic|'general'}

@@ -1,0 +1,37 @@
+system:
+  class: langchain_core.messages.SystemMessage
+  params:
+    # Union[str, list[Union[str, dict]]]
+    content: ${content}
+
+human:
+  class: langchain_core.messages.HumanMessage
+  params:
+    content: ${content}
+
+ai:
+  class: langchain_core.messages.AIMessage
+  params:
+    content: ${content}
+
+invoke:
+  input:
+    messages:
+      - class: langchain_core.messages.HumanMessage
+        params:
+          content: ${query}
+  config:
+    configurable:
+      thread_id: ${thread_id}
+
+prompt:
+  class: langchain_core.prompts.ChatPromptTemplate
+  init: from_messages
+  params:
+    messages:
+      - class: langchain_core.messages.SystemMessage
+        params:
+          content: ${system}
+      - class: langchain_core.prompts.MessagesPlaceholder
+        params:
+          variable_name: messages
