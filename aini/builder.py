@@ -188,6 +188,55 @@ def build_from_config(
     return cfg
 
 
+def track_used_variables(template, variables):
+    """
+    Track which variables from the input are used in the template.
+
+    Args:
+        template: The configuration template
+        variables: The variables to check for usage
+
+    Returns:
+        set: A set of variable names that were used in the template
+    """
+    used_vars = set()
+    pattern = r'\${([^}]+)}'
+
+    if isinstance(template, dict):
+        for key, value in template.items():
+            used_vars.update(track_used_variables(value, variables))
+    elif isinstance(template, list):
+        for item in template:
+            used_vars.update(track_used_variables(item, variables))
+    elif isinstance(template, str):
+        # Find all variable references
+        matches = re.finditer(pattern, template)
+        for match in matches:
+            var_expr = match.group(1)
+            # Handle alternatives (using | operator)
+            if '|' in var_expr:
+                alternatives = [alt.strip() for alt in var_expr.split('|')]
+                for alt in alternatives:
+                    # Skip literals in quotes or numeric/boolean literals
+                    if (
+                        (alt.startswith('"') and alt.endswith('"')) or
+                        (alt.startswith("'") and alt.endswith("'")) or
+                        alt.lower() in ('true', 'false') or
+                        alt.isdigit() or
+                        (alt.replace('.', '', 1).isdigit() and alt.count('.') == 1)
+                    ):
+                        continue
+
+                    if alt in variables:
+                        used_vars.add(alt)
+            else:
+                # Single variable case
+                if var_expr in variables:
+                    used_vars.add(var_expr)
+
+    return used_vars
+
+
 def aini(
     file_path: str,
     akey: Optional[str] = None,
@@ -247,7 +296,7 @@ def aini(
     if file_path.rsplit('.')[-1].lower() not in ext:
         file_path += f'.{ext[0]}'
 
-    # First check if file exists at specified path (absolute or relative to current working directory)
+    # File existence checks
     if not os.path.exists(file_path):
         # Try the current working directory
         cwd_path = os.path.join(os.getcwd(), file_path)
@@ -277,9 +326,20 @@ def aini(
     if not isinstance(raw_config, dict):
         raise ValueError(f'Invalid {file_type} structure: {file_path} - required dict at top level')
 
-    # Prepare and resolve variables
+    # Save original kwargs for later use
+    original_kwargs = kwargs.copy()
+
+    # Prepare default variables
     default_vars = raw_config.pop('defaults', {}) if 'defaults' in raw_config else {}
+
+    # Track which variables are used in the config template
+    used_vars = track_used_variables(raw_config, kwargs)
+
+    # Resolve variables in the configuration
     _config_ = resolve_vars(raw_config, kwargs, default_vars)
+
+    # Calculate which kwargs were NOT used in variable resolution
+    remaining_kwargs = {k: v for k, v in original_kwargs.items() if k not in used_vars}
 
     # If araw is enabled, return the resolved configuration without building
     if araw:
@@ -289,41 +349,43 @@ def aini(
             return _config_[akey]
         return _config_
 
+    # Handle the returned object(s)
     if isinstance(_config_, dict):
-        # Select subset if akey given
+        # Case 1: akey is provided - return a single instance
         if akey:
             if akey not in _config_:
                 raise KeyError(f"akey '{akey}' not found in configuration")
             config_item = _config_[akey]
 
-            # Pass kwargs to the builder for a single instance
+            # Only inject remaining kwargs to top-level class
             if isinstance(config_item, dict) and 'class' in config_item:
                 # Merge kwargs into params, with kwargs taking precedence
                 params = config_item.get('params', {})
-                merged_params = {**params, **kwargs}
+                merged_params = {**params, **remaining_kwargs}
                 config_item = {**config_item, 'params': merged_params}
 
             return build_from_config(config_item, base_module)
 
-        # No akey: handle single or multiple
+        # Case 2: Single top-level key (no akey) - return the single instance
         if len(_config_) == 1:
             key, val = next(iter(_config_.items()))
 
-            # Pass kwargs to the builder for a single instance
+            # Only inject remaining kwargs to top-level class
             if isinstance(val, dict) and 'class' in val:
                 # Merge kwargs into params, with kwargs taking precedence
                 params = val.get('params', {})
-                merged_params = {**params, **kwargs}
+                merged_params = {**params, **remaining_kwargs}
                 val = {**val, 'params': merged_params}
 
             return build_from_config(val, base_module)
 
-        # Multiple top-level keys: build instances without passing kwargs
+        # Case 3: Multiple top-level keys - return a dictionary of instances
         instances: Dict[str, Any] = {}
         for key, val in _config_.items():
             instances[key] = build_from_config(val, base_module)
 
         return instances
 
+    # Case 4: Not a dictionary (unlikely but handled for completeness)
     else:
         return build_from_config(_config_, base_module)
