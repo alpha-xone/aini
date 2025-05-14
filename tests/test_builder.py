@@ -582,5 +582,41 @@ def test_build_from_config_edge_cases():
         build_from_config(config)
 
 
+def test_nested_class_in_non_class_dict():
+    """Test that classes nested in dictionaries without a class key are still instantiated."""
+    # Create a config that mimics the structure in the LangChain example
+    config = {
+        "invoke": {  # No class key at this level
+            "messages": [
+                {
+                    "class": "test_builder.SimpleClass",
+                    "params": {
+                        "name": "nested_instance",
+                        "value": {
+                            "configurable": {
+                                "thread_id": "example_thread_id"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    }
+
+    # Build from the config
+    result = build_from_config(config)
+
+    # Check the structure is preserved
+    assert "invoke" in result
+    assert "messages" in result["invoke"]
+    assert isinstance(result["invoke"]["messages"], list)
+    assert len(result["invoke"]["messages"]) == 1
+
+    # Check that the nested class was instantiated
+    assert isinstance(result["invoke"]["messages"][0], SimpleClass)
+    assert result["invoke"]["messages"][0].name == "nested_instance"
+    assert result["invoke"]["messages"][0].value["configurable"]["thread_id"] == "example_thread_id"
+
+
 if __name__ == "__main__":
     pytest.main(["-xvs", __file__])
