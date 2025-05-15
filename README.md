@@ -2,7 +2,7 @@
 
 # aini
 
-Make **AI** class **ini**tialization easy with auto-imports.
+Declarative AI components - make **AI** component **ini**tialization easy with auto-imports.
 
 ## Installation
 
