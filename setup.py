@@ -33,6 +33,7 @@ setup(
     include_package_data=True,
     package_data={
         'aini': ['**/*.yml', '**/*.yaml', '**/*.json'],
+        '': ['requirements.txt'],
     },
     classifiers=[
         'Programming Language :: Python :: 3',
