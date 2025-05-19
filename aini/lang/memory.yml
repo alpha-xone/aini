@@ -1,0 +1,7 @@
+instore:
+  class: langgraph.store.memory.InMemoryStore
+  params:
+    index: ${index}
+
+saver:
+  class: langgraph.checkpoint.memory.MemorySaver

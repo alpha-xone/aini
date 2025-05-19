@@ -1,10 +1,20 @@
-system:
+msg_state:
+  class: langgraph.graph.MessagesState
+  init: false
+
+# Content type: Union[str, list[Union[str, dict]]]
+
+sys:
   class: langchain_core.messages.SystemMessage
   params:
-    # Union[str, list[Union[str, dict]]]
     content: ${content}
 
 human:
+  class: langchain_core.messages.HumanMessage
+  params:
+    content: ${content}
+
+user:
   class: langchain_core.messages.HumanMessage
   params:
     content: ${content}
@@ -19,7 +29,7 @@ invoke:
     messages:
       - class: langchain_core.messages.HumanMessage
         params:
-          content: ${query}
+          content: ${content}
   config:
     configurable:
       thread_id: ${thread_id}
@@ -35,3 +45,11 @@ prompt:
       - class: langchain_core.prompts.MessagesPlaceholder
         params:
           variable_name: messages
+
+trim:
+  class: langchain_core.messages.trim_messages
+  params:
+    messages: ${messages}
+    strategy: ${strategy|'last'}
+    max_tokens: ${max_tokens}
+    start_on: ${start_on|'human'}

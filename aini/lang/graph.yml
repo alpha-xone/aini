@@ -1,0 +1,7 @@
+state_graph:
+  class: langgraph.graph.StateGraph
+  params:
+    state_schema: ${state_schema}
+    config_schema: ${config_schema}
+    input: ${input}
+    output: ${output}
