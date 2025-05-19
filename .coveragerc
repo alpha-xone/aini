@@ -1,0 +1,7 @@
+[run]
+source = aini
+omit =
+    tests/*
+    */__pycache__/*
+    */lang_book/*
+    */site-packages/*
