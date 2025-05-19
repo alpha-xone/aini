@@ -226,7 +226,7 @@ def track_used_variables(template, variables):
     pattern = r'\${([^}]+)}'
 
     if isinstance(template, dict):
-        for key, value in template.items():
+        for _, value in template.items():
             used_vars.update(track_used_variables(value, variables))
     elif isinstance(template, list):
         for item in template:
@@ -260,6 +260,133 @@ def track_used_variables(template, variables):
     return used_vars
 
 
+def has_variable_injections_or_values(cfg, input_vars, os_environ, default_vars):
+    """
+    Check if a branch or any of its sub-branches contain variable injections or values.
+
+    Args:
+        cfg: The configuration branch to check
+        input_vars: User-provided variables
+        os_environ: Environment variables
+        default_vars: Default variables from configuration
+
+    Returns:
+        bool: True if the branch contains injections or values, False otherwise
+    """
+    pattern = r'\${([^}]+)}'
+
+    # Special case: if this is a class with init=False, always keep it
+    if isinstance(cfg, dict) and 'class' in cfg:
+        init_method = cfg.get('init', None)
+        if init_method is False or init_method == 'false':
+            return True
+
+    # Check if it's a primitive value (not dict or list)
+    if not isinstance(cfg, (dict, list)):
+        # If it's a string with variable pattern, check if any variable would resolve
+        if isinstance(cfg, str) and re.search(pattern, cfg):
+            matches = re.finditer(pattern, cfg)
+            for match in matches:
+                var_expr = match.group(1)
+                # Handle alternatives (using | operator)
+                if '|' in var_expr:
+                    alternatives = [alt.strip() for alt in var_expr.split('|')]
+                    for alt in alternatives:
+                        # Skip literals in quotes or numeric/boolean literals
+                        if (
+                            (alt.startswith('"') and alt.endswith('"')) or
+                            (alt.startswith("'") and alt.endswith("'")) or
+                            alt.lower() in ('true', 'false') or
+                            alt.isdigit() or
+                            (alt.replace('.', '', 1).isdigit() and alt.count('.') == 1)
+                        ):
+                            return True  # Literal values count as "having values"
+
+                        # Check if this alternative would resolve (found in a source)
+                        if alt in input_vars or alt in os_environ or alt in default_vars:
+                            return True
+                else:
+                    # Single variable case
+                    if var_expr in input_vars or var_expr in os_environ or var_expr in default_vars:
+                        return True
+        # Non-empty primitive values count as "having values"
+        return bool(cfg) if not isinstance(cfg, str) else cfg != ""
+
+    # For dictionaries, check each value
+    if isinstance(cfg, dict):
+        # Check the values of this dictionary
+        for key, value in cfg.items():
+            if has_variable_injections_or_values(value, input_vars, os_environ, default_vars):
+                return True
+        return False
+
+    # For lists, check each item
+    if isinstance(cfg, list):
+        for item in cfg:
+            if has_variable_injections_or_values(item, input_vars, os_environ, default_vars):
+                return True
+        return False
+
+    # Default case - if we get here, no values or injections found
+    return False
+
+
+def filter_branches_with_injections(
+    config_item: Dict[str, Any],
+    base_module: Optional[str],
+    original_kwargs: Dict[str, Any],
+    remaining_kwargs: Dict[str, Any],
+    default_vars: Dict[str, Any]
+) -> Any:
+    """
+    Filter branches at the second level, keeping only those with variable injections or values.
+    Also handle special cases like init=false.
+
+    Args:
+        config_item: The configuration item to filter
+        base_module: The base module for class imports
+        original_kwargs: Original kwargs passed to aini
+        remaining_kwargs: Kwargs not used in variable resolution
+        default_vars: Default variables from configuration
+
+    Returns:
+        The filtered configuration item or direct class instance
+    """
+    # If not a dictionary, no filtering needed
+    if not isinstance(config_item, dict):
+        return build_from_config(config_item, base_module)
+
+    # For class definitions, filter the params at the second level
+    if 'class' in config_item:
+        # Special case: init=false means return the class itself, not an instance
+        init_method = config_item.get('init', None)
+        if init_method is False or init_method == 'false':
+            return import_class(config_item['class'], base_module)
+
+        # Get the params dictionary
+        params = config_item.get('params', {})
+
+        # Filter params to keep only branches with injections or values
+        filtered_params = {}
+        for param_key, param_val in params.items():
+            if has_variable_injections_or_values(param_val, original_kwargs, os.environ, default_vars):
+                filtered_params[param_key] = param_val
+
+        # Only inject remaining kwargs to top-level class
+        merged_params = {**filtered_params, **remaining_kwargs}
+        filtered_item = {**config_item, 'params': merged_params}
+
+        return build_from_config(filtered_item, base_module)
+    else:
+        # For regular dictionaries, filter at the second level
+        filtered_dict = {}
+        for key, val in config_item.items():
+            if has_variable_injections_or_values(val, original_kwargs, os.environ, default_vars):
+                filtered_dict[key] = val
+
+        return build_from_config(filtered_dict, base_module)
+
+
 def aini(
     file_path: str,
     akey: Optional[str] = None,
@@ -272,6 +399,7 @@ def aini(
     Load YAML / JSON from a file, resolve input/env/default variables, and return built class instances.
     Supports a special top-level 'defaults' block to define fallback variable values.
     Priority: input variables (kwargs) > os.environ > 'defaults' block in input file > None.
+    Branches at the second level with no variable injections or values are excluded.
 
     Args:
         file_path: Path to the YAML file. Relative path is working against current folder.
@@ -378,35 +506,23 @@ def aini(
         if akey:
             if akey not in _config_:
                 raise KeyError(f"akey '{akey}' not found in configuration")
-            config_item = _config_[akey]
-
-            # Only inject remaining kwargs to top-level class
-            if isinstance(config_item, dict) and 'class' in config_item:
-                # Merge kwargs into params, with kwargs taking precedence
-                params = config_item.get('params', {})
-                merged_params = {**params, **remaining_kwargs}
-                config_item = {**config_item, 'params': merged_params}
-
-            return build_from_config(config_item, base_module)
+            return filter_branches_with_injections(
+                _config_[akey], base_module, original_kwargs, remaining_kwargs, default_vars
+            )
 
         # Case 2: Single top-level key (no akey) - return the single instance
         if len(_config_) == 1:
             key, val = next(iter(_config_.items()))
-
-            # Only inject remaining kwargs to top-level class
-            if isinstance(val, dict) and 'class' in val:
-                # Merge kwargs into params, with kwargs taking precedence
-                params = val.get('params', {})
-                merged_params = {**params, **remaining_kwargs}
-                val = {**val, 'params': merged_params}
-
-            return build_from_config(val, base_module)
+            return filter_branches_with_injections(
+                val, base_module, original_kwargs, remaining_kwargs, default_vars
+            )
 
         # Case 3: Multiple top-level keys - return a dictionary of instances
         instances: Dict[str, Any] = {}
         for key, val in _config_.items():
-            instances[key] = build_from_config(val, base_module)
-
+            instances[key] = filter_branches_with_injections(
+                val, base_module, original_kwargs, remaining_kwargs, default_vars
+            )
         return instances
 
     # Case 4: Not a dictionary (unlikely but handled for completeness)
