@@ -31,6 +31,7 @@ agent:
     resolve_context: ${resolve_context|true}
 
     # --- Agent Memory ---
+    # Optional[Union[AgentMemory, Memory]]
     memory: ${memory}
     # Enable the agent to manage memories of the user
     enable_agentic_memory: ${enable_agentic_memory|false}
@@ -53,6 +54,10 @@ agent:
 
     # --- Agent Knowledge ---
     knowledge: ${knowledge}
+    # Add knowledge_filters to the Agent class attributes
+    knowledge_filters: ${knowledge_filters}
+    # Let the agent choose the knowledge filters
+    enable_agentic_knowledge_filters: ${enable_agentic_knowledge_filters|false}
     # Enable RAG by adding references from AgentKnowledge to the user prompt.
     add_references: ${add_references|false}
     # Retrieval function to get references
@@ -110,7 +115,7 @@ agent:
     # Provide the system message as a string or function
     system_message: ${system_message}
     # Role for the system message
-    system_message_role: ${system_message_role|system}
+    system_message_role: ${system_message_role|'system'}
     # If True, create a default system message using agent settings and use that
     create_default_system_message: ${create_default_system_message|true}
 
@@ -148,7 +153,7 @@ agent:
     # Note: this will ignore the message sent to the run function
     user_message: ${user_message}
     # Role for the user message
-    user_message_role: ${user_message_role|user}
+    user_message_role: ${user_message_role|'user'}
     # If True, create a default user message using references and chat history
     create_default_user_message: ${create_default_user_message|true}
 
