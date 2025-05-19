@@ -1,0 +1,25 @@
+config:
+  # list[str] - Tags for this call and any sub-calls (eg. a Chain calling an LLM).
+  #   You can use these to filter calls.
+  tags: ${tags}
+  # dict[str, Any] - Metadata for this call and any sub-calls (eg. a Chain calling an LLM).
+  #   Keys should be strings, values should be JSON-serializable.
+  metadata: ${metadata}
+  # Callbacks - Callbacks for this call and any sub-calls (eg. a Chain calling an LLM).
+  #   Tags are passed to all callbacks, metadata is passed to handle*Start callbacks.
+  callbacks: ${callbacks}
+  # str - Name for the tracer run for this call. Defaults to the name of the class.
+  run_name: ${run_name}
+  # Optional[int] - Maximum number of parallel calls to make. If not provided, defaults to
+  #   ThreadPoolExecutor's default.
+  max_concurrency: ${max_concurrency}
+  # int - Maximum number of times a call can recurse. If not provided, defaults to 25.
+  recursion_limit: ${recursion_limit|25}
+  # dict[str, Any] - Runtime values for attributes previously made configurable on this Runnable,
+  #   or sub-Runnables, through .configurable_fields() or .configurable_alternatives().
+  #   Check .output_schema() for a description of the attributes that have been made configurable.
+  configurable:
+    thread_id: ${thread_id}
+  # Optional[uuid.UUID] - Unique identifier for the tracer run for this call. If not provided,
+  #   a new UUID will be generated.
+  run_id: ${run_id}
