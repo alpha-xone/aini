@@ -36,7 +36,7 @@ Use [`DeepSeek`](https://platform.deepseek.com/) to invoke messages:
 In [1]: from aini import aini, aview
 
 In [2]: ds = aini('lang/llm:ds')
-In [3]: ds.invole('hi')
+In [3]: ds.invole('hi').pretty_print()
 ======================== Ai Message ========================
 
 Hello! 😊 How can I assist you today?
