@@ -27,57 +27,44 @@ def import_class(full_class_path: str, base_module: Optional[str] = None) -> Any
     return getattr(module, class_name)
 
 
-def resolve_var_match(match: Match, input_vars: Dict[str, Any], default_vars: Dict[str, Any]) -> Any:
+def resolve_variable(
+    var_name: str,
+    is_full_match: bool,
+    input_vars: Dict[str, Any],
+    default_vars: Dict[str, Any],
+) -> Optional[Any]:
     """
-    Resolve a single variable match, handling alternatives with | operator.
-    Returns the resolved value with appropriate type.
+    Resolve a single variable or literal value by name.
+    Handles variable lookups, literals, and special values.
+    Priority: literals > input_vars > os.environ > default_vars > None.
+
+    Args:
+        var_name: The name of the variable or literal to resolve
+        is_full_match: Whether this variable is the entire string (affects type preservation)
+        input_vars: User-provided variables
+        default_vars: Default variables from configuration
+
+    Returns:
+        The resolved value, or None if not found
     """
-    var_expr = match.group(1)
-    is_full_match = match.group(0) == match.string
+    # Handle boolean literals
+    if var_name.lower() == 'true':
+        return True if is_full_match else 'True'
+    elif var_name.lower() == 'false':
+        return False if is_full_match else 'False'
 
-    # Process alternatives (using | operator)
-    if '|' in var_expr:
-        alternatives = var_expr.split('|')
-        for alt in alternatives:
-            alt = alt.strip()
+    # Handle numeric literals
+    if var_name.isdigit():
+        return int(var_name) if is_full_match else var_name
+    elif var_name.replace('.', '', 1).isdigit() and var_name.count('.') == 1:
+        return float(var_name) if is_full_match else var_name
 
-            # Handle boolean literals
-            if alt.lower() == 'true':
-                return True if is_full_match else 'True'
-            elif alt.lower() == 'false':
-                return False if is_full_match else 'False'
+    # Handle quoted literals
+    if (var_name.startswith('"') and var_name.endswith('"')) \
+            or (var_name.startswith("'") and var_name.endswith("'")):
+        return var_name[1:-1]  # Return the literal without quotes
 
-            # Handle numeric literals
-            if alt.isdigit():
-                return int(alt) if is_full_match else alt
-            elif alt.replace('.', '', 1).isdigit() and alt.count('.') == 1:
-                return float(alt) if is_full_match else alt
-
-            # Handle quoted literals
-            if (alt.startswith('"') and alt.endswith('"')) or (alt.startswith("'") and alt.endswith("'")):
-                return alt[1:-1]  # Return the literal without quotes
-
-            # Try variables in priority order
-            if alt in input_vars:
-                value = input_vars[alt]
-                return value if is_full_match else str(value)
-            elif alt in os.environ:
-                env_val = os.environ[alt]
-                # Handle boolean environment variables
-                if env_val.lower() == 'true':
-                    return True if is_full_match else 'True'
-                elif env_val.lower() == 'false':
-                    return False if is_full_match else 'False'
-                return env_val
-            elif alt in default_vars:
-                value = default_vars[alt]
-                return value if is_full_match else str(value)
-
-        # No alternatives resolved
-        return None if is_full_match else 'None'
-
-    # Handle single variable (no | operator)
-    var_name = var_expr
+    # Try variables in priority order
     if var_name in input_vars:
         value = input_vars[var_name]
         return value if is_full_match else str(value)
@@ -95,6 +82,36 @@ def resolve_var_match(match: Match, input_vars: Dict[str, Any], default_vars: Di
 
     # Variable not found
     return None if is_full_match else 'None'
+
+
+def resolve_var_match(
+    match: Match,
+    input_vars: Dict[str, Any],
+    default_vars: Dict[str, Any],
+) -> Any:
+    """
+    Resolve a single variable match, handling alternatives with | operator.
+    Returns the resolved value with appropriate type.
+    """
+    var_expr = match.group(1)
+    is_full_match = match.group(0) == match.string
+
+    # Process alternatives (using | operator)
+    if '|' in var_expr:
+        alternatives = var_expr.split('|')
+        for alt in alternatives:
+            alt = alt.strip()
+
+            # Try to resolve the variable or literal
+            result = resolve_variable(alt, is_full_match, input_vars, default_vars)
+            if result is not None and (is_full_match or result != 'None'):
+                return result
+
+        # No alternatives resolved
+        return None if is_full_match else 'None'
+
+    # Handle single variable (no | operator)
+    return resolve_variable(var_expr, is_full_match, input_vars, default_vars)
 
 
 def resolve_vars(
