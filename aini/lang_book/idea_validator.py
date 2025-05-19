@@ -32,11 +32,9 @@ def idea_validator():
     )
 
 
-def gen_report(idea: str, thread_id: str = 'idea'):
+def gen_report(idea: str):
     """Generate a report for the idea."""
-    # Clarify the idea
-    config = {'configurable': {'thread_id': thread_id}}
-    return idea_validator().invoke({'messages': idea}, config=config).get('messages', None)
+    return idea_validator().invoke({'messages': idea}).get('messages', None)
 
 
 if __name__ == '__main__':

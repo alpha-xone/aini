@@ -28,13 +28,46 @@ pip install aini
 
 ## Usage
 
-### [Autogen](https://github.com/microsoft/autogen)
+### [LangChain / LangGraph](https://langchain-ai.github.io/langgraph/)
 
-Use [DeepSeek](https://platform.deepseek.com/) as the model for the assistant agent.
+Use [`DeepSeek`](https://platform.deepseek.com/) to invoke messages:
 
 ```python
 from aini import aini, aview
 
+ds = aini('lang/llm:ds')
+ds.invole('hi')
+[Output]
+======================== Ai Message ========================
+
+Hello! 😊 How can I assist you today?
+```
+
+Idea validator example from [Agno](https://docs.agno.com/examples/workflows/startup-idea-validator):
+
+```python
+from lang_book.idea_validator import gen_report
+
+report = gen_report(idea='A new social media platform for pet owners.')
+report[-1].pretty_print()
+[Output]
+======================== Ai Message ========================
+
+### **Startup Report: A Social Media Platform for Pet Owners**
+
+---
+
+#### **1. Executive Summary**
+The startup proposes a dedicated social media platform exclusively for pet owners, addressing gaps in existing platforms like Facebook, Instagram, and Reddit. By combining pet-centric features, localized communities, and expert resources, the platform aims to become the go-to hub for pet lovers worldwide.
+
+...
+```
+
+### [Autogen](https://github.com/microsoft/autogen)
+
+Use [`DeepSeek`](https://platform.deepseek.com/) as the model for the assistant agent.
+
+```python
 # Load assistant agent with DeepSeek as its model - requires DEEPSEEK_API_KEY
 client = aini('autogen/client', model=aini('autogen/llm:ds'))
 agent = aini('autogen/assistant', name='deepseek', model_client=client)
