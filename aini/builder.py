@@ -211,26 +211,75 @@ def build_from_config(
     return cfg
 
 
-def track_used_variables(template, variables):
+def analyze_variables(
+    template: Any,
+    input_vars: Dict[str, Any],
+    os_environ: Dict[str, str] = None,
+    default_vars: Dict[str, Any] = None,
+    track_mode: bool = True
+) -> Union[set, bool]:
     """
-    Track which variables from the input are used in the template.
+    Analyze variables in a template structure.
+    Can be used in two modes:
+    1. Track used variables (track_mode=True): Returns a set of variable names used in the template
+    2. Check for variable injections (track_mode=False): Returns a boolean indicating if any variables
+       would be injected or if any non-empty values exist
 
     Args:
-        template: The configuration template
-        variables: The variables to check for usage
+        template: The configuration template to analyze
+        input_vars: User-provided variables
+        os_environ: Environment variables (defaults to os.environ if None)
+        default_vars: Default variables from configuration
+        track_mode: If True, tracks variables and returns a set of names
+                    If False, checks for injections and returns a boolean
 
     Returns:
-        set: A set of variable names that were used in the template
+        set: A set of variable names that were used (when track_mode=True)
+        bool: True if the branch contains injections or values (when track_mode=False)
     """
-    used_vars = set()
+    if os_environ is None:
+        os_environ = os.environ
+    if default_vars is None:
+        default_vars = {}
+
     pattern = r'\${([^}]+)}'
 
+    # Initialize result based on mode
+    result = set() if track_mode else False
+
+    # Special case: if this is a class with init=false, always keep it in injection check mode
+    if not track_mode and isinstance(template, dict) and 'class' in template:
+        init_method = template.get('init', None)
+        if init_method is False or init_method == 'false':
+            return True
+
+    # Handle dictionaries
     if isinstance(template, dict):
-        for _, value in template.items():
-            used_vars.update(track_used_variables(value, variables))
+        if track_mode:
+            # In tracking mode, combine sets from all values
+            for _, value in template.items():
+                result.update(analyze_variables(value, input_vars, os_environ, default_vars, True))
+        else:
+            # In injection check mode, return True if any value has injections
+            for key, value in template.items():
+                if analyze_variables(value, input_vars, os_environ, default_vars, False):
+                    return True
+            return False
+
+    # Handle lists
     elif isinstance(template, list):
-        for item in template:
-            used_vars.update(track_used_variables(item, variables))
+        if track_mode:
+            # In tracking mode, combine sets from all items
+            for item in template:
+                result.update(analyze_variables(item, input_vars, os_environ, default_vars, True))
+        else:
+            # In injection check mode, return True if any item has injections
+            for item in template:
+                if analyze_variables(item, input_vars, os_environ, default_vars, False):
+                    return True
+            return False
+
+    # Handle strings with variable references
     elif isinstance(template, str):
         # Find all variable references
         matches = re.finditer(pattern, template)
@@ -248,16 +297,51 @@ def track_used_variables(template, variables):
                         alt.isdigit() or
                         (alt.replace('.', '', 1).isdigit() and alt.count('.') == 1)
                     ):
+                        if not track_mode:
+                            return True  # Literal values count as "having values" in injection mode
                         continue
 
-                    if alt in variables:
-                        used_vars.add(alt)
+                    # In tracking mode, add variable to result if it exists in input_vars
+                    if track_mode:
+                        if alt in input_vars:
+                            result.add(alt)
+                    # In injection check mode, return True if the variable would be resolved
+                    else:
+                        if alt in input_vars or alt in os_environ or alt in default_vars:
+                            return True
             else:
                 # Single variable case
-                if var_expr in variables:
-                    used_vars.add(var_expr)
+                if track_mode:
+                    if var_expr in input_vars:
+                        result.add(var_expr)
+                else:
+                    if var_expr in input_vars or var_expr in os_environ or var_expr in default_vars:
+                        return True
 
-    return used_vars
+        # In injection check mode, non-empty primitive strings count as "having values"
+        if not track_mode:
+            return template != ""
+
+    # In injection check mode, non-empty primitives count as "having values"
+    elif not track_mode:
+        return bool(template)
+
+    return result
+
+
+# Replace existing functions with the new unified function
+def track_used_variables(template, variables):
+    """
+    Track which variables from the input are used in the template.
+
+    Args:
+        template: The configuration template
+        variables: The variables to check for usage
+
+    Returns:
+        set: A set of variable names that were used in the template
+    """
+    return analyze_variables(template, variables, track_mode=True)
 
 
 def has_variable_injections_or_values(cfg, input_vars, os_environ, default_vars):
@@ -273,62 +357,7 @@ def has_variable_injections_or_values(cfg, input_vars, os_environ, default_vars)
     Returns:
         bool: True if the branch contains injections or values, False otherwise
     """
-    pattern = r'\${([^}]+)}'
-
-    # Special case: if this is a class with init=False, always keep it
-    if isinstance(cfg, dict) and 'class' in cfg:
-        init_method = cfg.get('init', None)
-        if init_method is False or init_method == 'false':
-            return True
-
-    # Check if it's a primitive value (not dict or list)
-    if not isinstance(cfg, (dict, list)):
-        # If it's a string with variable pattern, check if any variable would resolve
-        if isinstance(cfg, str) and re.search(pattern, cfg):
-            matches = re.finditer(pattern, cfg)
-            for match in matches:
-                var_expr = match.group(1)
-                # Handle alternatives (using | operator)
-                if '|' in var_expr:
-                    alternatives = [alt.strip() for alt in var_expr.split('|')]
-                    for alt in alternatives:
-                        # Skip literals in quotes or numeric/boolean literals
-                        if (
-                            (alt.startswith('"') and alt.endswith('"')) or
-                            (alt.startswith("'") and alt.endswith("'")) or
-                            alt.lower() in ('true', 'false') or
-                            alt.isdigit() or
-                            (alt.replace('.', '', 1).isdigit() and alt.count('.') == 1)
-                        ):
-                            return True  # Literal values count as "having values"
-
-                        # Check if this alternative would resolve (found in a source)
-                        if alt in input_vars or alt in os_environ or alt in default_vars:
-                            return True
-                else:
-                    # Single variable case
-                    if var_expr in input_vars or var_expr in os_environ or var_expr in default_vars:
-                        return True
-        # Non-empty primitive values count as "having values"
-        return bool(cfg) if not isinstance(cfg, str) else cfg != ""
-
-    # For dictionaries, check each value
-    if isinstance(cfg, dict):
-        # Check the values of this dictionary
-        for key, value in cfg.items():
-            if has_variable_injections_or_values(value, input_vars, os_environ, default_vars):
-                return True
-        return False
-
-    # For lists, check each item
-    if isinstance(cfg, list):
-        for item in cfg:
-            if has_variable_injections_or_values(item, input_vars, os_environ, default_vars):
-                return True
-        return False
-
-    # Default case - if we get here, no values or injections found
-    return False
+    return analyze_variables(cfg, input_vars, os_environ, default_vars, track_mode=False)
 
 
 def filter_branches_with_injections(
