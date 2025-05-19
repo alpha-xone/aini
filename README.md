@@ -33,11 +33,10 @@ pip install aini
 Use [`DeepSeek`](https://platform.deepseek.com/) to invoke messages:
 
 ```python
-from aini import aini, aview
+In [1]: from aini import aini, aview
 
-ds = aini('lang/llm:ds')
-ds.invole('hi')
-[Output]
+In [2]: ds = aini('lang/llm:ds')
+In [3]: ds.invole('hi')
 ======================== Ai Message ========================
 
 Hello! 😊 How can I assist you today?
@@ -46,11 +45,10 @@ Hello! 😊 How can I assist you today?
 Idea validator example from [Agno](https://docs.agno.com/examples/workflows/startup-idea-validator):
 
 ```python
-from lang_book.idea_validator import gen_report
+In [4]: from lang_book.idea_validator import gen_report
 
-report = gen_report(idea='A new social media platform for pet owners.')
-report[-1].pretty_print()
-[Output]
+In [5]: report = gen_report(idea='A new social media platform for pet owners.')
+In [6]: report[-1].pretty_print()
 ======================== Ai Message ========================
 
 ### **Startup Report: A Social Media Platform for Pet Owners**
@@ -58,7 +56,11 @@ report[-1].pretty_print()
 ---
 
 #### **1. Executive Summary**
-The startup proposes a dedicated social media platform exclusively for pet owners, addressing gaps in existing platforms like Facebook, Instagram, and Reddit. By combining pet-centric features, localized communities, and expert resources, the platform aims to become the go-to hub for pet lovers worldwide.
+The startup proposes a dedicated social media platform exclusively
+for pet owners, addressing gaps in existing platforms like Facebook,
+Instagram, and Reddit. By combining pet-centric features, localized
+communities, and expert resources, the platform aims to become the
+go-to hub for pet lovers worldwide.
 
 ...
 ```
@@ -69,15 +71,15 @@ Use [`DeepSeek`](https://platform.deepseek.com/) as the model for the assistant 
 
 ```python
 # Load assistant agent with DeepSeek as its model - requires DEEPSEEK_API_KEY
-client = aini('autogen/client', model=aini('autogen/llm:ds'))
-agent = aini('autogen/assistant', name='deepseek', model_client=client)
+In [7]: client = aini('autogen/client', model=aini('autogen/llm:ds'))
+In [8]: agent = aini('autogen/assistant', name='deepseek', model_client=client)
 
 # Run the agent
-ans = await agent.run(task='What is your name')
+In [9]: ans = await agent.run(task='What is your name')
 
 # Display result structure
-aview(ans)
-[Output]
+In [10]: aview(ans)
+Out [10]:
 <autogen_agentchat.base._task.TaskResult>
 {
   'messages': [
@@ -95,8 +97,8 @@ aview(ans)
 }
 
 # Display agent structure with private keys included
-aview(agent._model_context, inc_=True, max_depth=5)
-[Output]
+In [11]: aview(agent._model_context, inc_=True, max_depth=5)
+Out [11]:
 <autogen_core.model_context._unbounded_chat_completion_context.UnboundedChatCompletionContext>
 {
   '_messages': [
@@ -114,14 +116,14 @@ aview(agent._model_context, inc_=True, max_depth=5)
 
 ```python
 # Load an agent with tools from configuration files
-agent = aini('agno/agent', tools=[aini('agno/tools:google')])
+In [12]: agent = aini('agno/agent', tools=[aini('agno/tools:google')])
 
 # Run the agent
-ans = agent.run('Compare MCP and A2A')
+In [13]: ans = agent.run('Compare MCP and A2A')
 
 # Display component structure with filtering
-aview(ans, exc_keys=['metrics'])
-[Output]
+In [14]: aview(ans, exc_keys=['metrics'])
+Out [14]:
 <agno.run.response.RunResponse>
 {
   'content': "Here's a comparison between **MCP** and **A2A**: ...",
@@ -152,13 +154,13 @@ aview(ans, exc_keys=['metrics'])
 }
 
 # Export to YAML for debugging
-aview(ans, to_file='debug/output.yaml')
+In [15]: aview(ans, to_file='debug/output.yaml')
 ```
 
 ### [Mem0](https://mem0.ai/)
 
 ```python
-memory = aini('mem0/memory:mem0')
+In [16]: memory = aini('mem0/memory:mem0')
 ```
 
 ## Configuration File Format
@@ -237,10 +239,8 @@ Use the `araw` parameter to get the resolved configuration without building obje
 
 ```python
 # Get raw configuration with variables resolved
-config = aini('openai/model_config', araw=True)
-print(config)
+In [17]: config = aini('openai/model_config', araw=True)
 
 # Get specific component configuration
-model_config = aini('openai/model_config', akey='gpt4', araw=True)
-print(model_config)
+In [18]: model_config = aini('openai/model_config', akey='gpt4', araw=True)
 ```
