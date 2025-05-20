@@ -3,7 +3,6 @@
 from aini import aini
 
 from pydantic import BaseModel, Field
-from langgraph.graph import StateGraph, MessagesState, START, END
 
 
 class IdeaClarification(BaseModel):
@@ -37,15 +36,15 @@ def agent(role: str):
 
 
 graph = (
-    StateGraph(MessagesState)
+    aini('lang/graph', state_schema=aini('lang/msg:msg_state'))
     .add_node("clarifier", agent("clarifier"))
     .add_node("researcher", agent("researcher"))
     .add_node("competitor", agent("competitor"))
     .add_node("report", agent("report"))
-    .add_edge(START, "clarifier")
+    .add_edge('__start__', "clarifier")
     .add_edge("clarifier", "researcher")
     .add_edge("researcher", "competitor")
     .add_edge("competitor", "report")
-    .add_edge("report", END)
+    .add_edge("report", '__end__')
     .compile()
 )
