@@ -20,6 +20,7 @@ def get_version():
     raise RuntimeError("Version information not found")
 
 
+# For backward compatibility
 setup(
     name='aini',
     version=get_version(),
