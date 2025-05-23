@@ -15,9 +15,10 @@ human:
     content: ${content}
 
 user:
-  class: langchain_core.messages.HumanMessage
-  params:
-    content: ${content}
+  messages:
+    class: langchain_core.messages.HumanMessage
+    params:
+      content: ${content}
 
 ai:
   class: langchain_core.messages.AIMessage

@@ -15,28 +15,28 @@ r1:
 ## Qwen Models
 
 sf-qwen:
-  class: langchain_openai.OpenAI
+  class: langchain_openai.ChatOpenAI
   params:
     model: Qwen/Qwen3-8B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
 
 sf-qwen-14b:
-  class: langchain_openai.OpenAI
+  class: langchain_openai.ChatOpenAI
   params:
     model: Qwen/Qwen3-14B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
 
 sf-qwen-30b:
-  class: langchain_openai.OpenAI
+  class: langchain_openai.ChatOpenAI
   params:
     model: Qwen/Qwen3-30B-A3B
     base_url: https://api.siliconflow.cn/v1
     api_key: ${SF_API_KEY}
 
 sf-qwen-32b:
-  class: langchain_openai.OpenAI
+  class: langchain_openai.ChatOpenAI
   params:
     model: Qwen/Qwen3-32B
     base_url: https://api.siliconflow.cn/v1
