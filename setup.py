@@ -11,6 +11,9 @@ if os.path.exists('requirements.txt'):
     with open('requirements.txt', 'r', encoding='utf-8') as req_file:
         requirements = [line.strip() for line in req_file if line.strip() and not line.startswith('#')]
 
+# Make them available to the build process
+os.environ['AINI_DEPENDENCIES'] = ';'.join(requirements)
+
 
 def get_version():
     with open('aini/__init__.py', 'r', encoding='utf-8') as f:
@@ -26,7 +29,7 @@ setup(
     version=get_version(),
     author='Alpha x1',
     author_email='alpha.xone@outlook.com',
-    description='Make class instantiation easy with auto-imports',
+    description='Declarative AI components',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/alpha-xone/aini',

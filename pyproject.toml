@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aini"
-dynamic = ["version"]
+dynamic = ["version", "dependencies"]
 authors = [
     {name = "Alpha x1", email = "alpha.xone@outlook.com"},
 ]
@@ -15,13 +15,6 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: Apache Software License",
     "Operating System :: OS Independent",
-]
-dependencies = [
-    "rich>=13.0.0",
-    "pyyaml>=6.0.0",
-    "importlib-metadata>=6.0.0",
-    "typing-extensions>=4.0.0",
-    "pydantic>=2.11.0",
 ]
 
 [project.urls]
@@ -37,3 +30,4 @@ include-package-data = true
 
 [tool.setuptools.dynamic]
 version = {attr = "aini.__version__"}
+dependencies = {env = "AINI_DEPENDENCIES", delimiter = ";"}
