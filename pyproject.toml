@@ -27,9 +27,9 @@ dependencies = [
 [project.optional-dependencies]
 agno = ["agno>=1.5.0"]
 autogen = [
-    "autogen-agentchat>=0.5.7"
-    "autogen-core>=0.5.7"
-    "autogen-ext>=0.5.7"
+    "autogen-agentchat>=0.5.7",
+    "autogen-core>=0.5.7",
+    "autogen-ext>=0.5.7",
 ]
 lang = [
     "langchain>=0.3.20",
@@ -45,9 +45,9 @@ mem0 = [
 ]
 all = [
     "agno>=1.5.0",
-    "autogen-agentchat>=0.5.7"
-    "autogen-core>=0.5.7"
-    "autogen-ext>=0.5.7"
+    "autogen-agentchat>=0.5.7",
+    "autogen-core>=0.5.7",
+    "autogen-ext>=0.5.7",
     "langchain>=0.3.20",
     "langchain-openai>=0.3.18",
     "langchain-deepseek>=0.1.3",
