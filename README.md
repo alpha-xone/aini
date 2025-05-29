@@ -257,7 +257,7 @@ In [19]: from aini import alist
 In [20]: alist(key='lang')
 ╭───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 │ Found 9 YAML file(s)                                                                                      │
-│ └── aini / Site-Packages: C:/Python312/Lib/site-packages/aini/                                            │
+│ └── aini / Site-Packages: C:/Python3/Lib/site-packages/aini/                                              │
 │     ├── lang/                                                                                             │
 │     │   ├── config.yml: config                                                                            │
 │     │   ├── graph.yml: state_graph                                                                        │
@@ -269,5 +269,5 @@ In [20]: alist(key='lang')
 │     │   └── tools.yml: tavily                                                                             │
 │     └── lang_book/                                                                                        │
 │         └── idea_validator.yml: clarifier, researcher, competitor, report                                 │
-╭───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+╰───────────────────────────────────────────────────────────────────────────────────────────────────────────╯
 ```
