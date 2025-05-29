@@ -24,6 +24,40 @@ dependencies = [
     "pydantic>=2.11.0",
 ]
 
+[project.optional-dependencies]
+agno = ["agno>=1.5.0"]
+autogen = [
+    "autogen-agentchat>=0.5.7"
+    "autogen-core>=0.5.7"
+    "autogen-ext>=0.5.7"
+]
+lang = [
+    "langchain>=0.3.20",
+    "langchain-openai>=0.3.18",
+    "langchain-deepseek>=0.1.3",
+    "langgraph>=0.4.7",
+]
+mem0 = [
+    "mem0ai>=0.1.98",
+    "neo4j>=5.26.0",
+    "langchain-neo4j>=0.4.0",
+    "rank_bm25>=0.2.2",
+]
+all = [
+    "agno>=1.5.0",
+    "autogen-agentchat>=0.5.7"
+    "autogen-core>=0.5.7"
+    "autogen-ext>=0.5.7"
+    "langchain>=0.3.20",
+    "langchain-openai>=0.3.18",
+    "langchain-deepseek>=0.1.3",
+    "langgraph>=0.4.7",
+    "mem0ai>=0.1.98",
+    "neo4j>=5.26.0",
+    "langchain-neo4j>=0.4.0",
+    "rank_bm25>=0.2.2",
+]
+
 [project.urls]
 "Homepage" = "https://github.com/alpha-xone/aini"
 "Bug Tracker" = "https://github.com/alpha-xone/aini/issues"
