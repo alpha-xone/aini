@@ -25,6 +25,7 @@ pip install aini
 - `aini()`: Loads and instantiates objects from configuration files
 - `aview()`: Visualizes complex nested objects for debugging
 - `ameth()`: Lists available methods on an object
+- `alist()`: Discover available components in configuration files
 
 ## Usage
 
@@ -243,4 +244,30 @@ In [17]: config = aini('openai/model_config', araw=True)
 
 # Get specific component configuration
 In [18]: model_config = aini('openai/model_config', akey='gpt4', araw=True)
+```
+
+### Component Discovery with `alist()`
+
+`alist()` helps you discover available components in configuration files, making it easy to explore what's available:
+
+```python
+In [19]: from aini import alist
+
+# List all YAML files with a specific keyword
+In [20]: alist(key='lang')
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│ Found 9 YAML file(s)                                                                                      │
+│ └── aini / Site-Packages: C:/Python312/Lib/site-packages/aini/                                            │
+│     ├── lang/                                                                                             │
+│     │   ├── config.yml: config                                                                            │
+│     │   ├── graph.yml: state_graph                                                                        │
+│     │   ├── llm.yml: ds, r1, sf-qwen, sf-qwen-14b, sf-qwen-30b, sf-qwen-32b, sf-bge, sf-bge-m3, sf-youdao │
+│     │   ├── memory.yml: instore, saver                                                                    │
+│     │   ├── msg.yml: msg_state, sys, human, user, ai, invoke, prompt, trim                                │
+│     │   ├── react.yml: agent                                                                              │
+│     │   ├── supervisor.yml: supervisor                                                                    │
+│     │   └── tools.yml: tavily                                                                             │
+│     └── lang_book/                                                                                        │
+│         └── idea_validator.yml: clarifier, researcher, competitor, report                                 │
+╭───────────────────────────────────────────────────────────────────────────────────────────────────────────╮
 ```

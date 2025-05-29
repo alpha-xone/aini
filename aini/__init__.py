@@ -4,5 +4,5 @@ from aini.builder import aini
 from aini.viewer import aview, ameth
 from aini.listing import alist
 
-__version__ = '0.3.2c'
+__version__ = '0.3.2'
 __all__ = ['aini', 'aview', 'alist', 'ameth']
