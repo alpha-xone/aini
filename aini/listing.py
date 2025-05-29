@@ -21,7 +21,7 @@ def alist(
     exclude_keys: List[str] = ["defaults"],
     print_results: bool = True,
     indent_size: int = 2
-) -> Union[Dict[str, List[str]], None]:
+) -> Union[Dict[str, Dict[str, List[str]]], None]:
     """
     List all YAML files and their top-level keys from immediate subfolders of:
     1) The current working directory
@@ -41,8 +41,8 @@ def alist(
         indent_size: Size of the indentation for printed results (default: 2)
 
     Returns:
-        Dictionary mapping file paths to lists of their top-level keys,
-        or None if print_results is True
+        Dictionary with 'current' and 'aini' keys, each containing dictionaries mapping
+        file paths to lists of their top-level keys, or None if print_results is True
     """
     if verbose:
         logger.setLevel(logging.INFO)
@@ -62,12 +62,24 @@ def alist(
         # Avoid duplicates if cwd is the same as script_dir
         search_dirs = list(set(search_dirs))
 
-    result = {}
-    result_origins = {}  # Track which search_dir each file came from
+    # Initialize result structure with 'current' and 'aini' dictionaries
+    result = {
+        'current': {},  # For files from current working directory or base_path
+        'aini': {}      # For files from script directory
+    }
 
     for search_dir in search_dirs:
         if verbose:
             logger.info(f"Searching in: {search_dir}")
+
+        # Determine if this is current directory, base_path, or aini directory
+        # If base_path is provided, always treat it as 'current'
+        if base_path:
+            is_cwd = True  # Treat as 'current' when base_path is provided
+        else:
+            is_cwd = str(search_dir.resolve()) == str(Path(cwd).resolve())
+
+        target_dict = result['current'] if is_cwd else result['aini']
 
         # Get immediate subdirectories
         subdirs = [d for d in search_dir.iterdir() if d.is_dir()]
@@ -117,11 +129,13 @@ def alist(
                         # Store the result with origin information
                         relative_path = os.path.relpath(yaml_file, search_dir)
                         relative_path = relative_path.replace('\\', '/')
-                        result[relative_path] = top_level_keys
-                        result_origins[relative_path] = str(search_dir)  # Store the origin
+
+                        # Store directly in the appropriate dictionary
+                        target_dict[relative_path] = top_level_keys
 
                         if verbose:
-                            logger.info(f"Found {relative_path} with keys: {top_level_keys}")
+                            origin_type = "current" if is_cwd else "aini"
+                            logger.info(f"Found {relative_path} with keys: {top_level_keys} (origin: {origin_type})")
 
                     except Exception as e:
                         if verbose:
@@ -129,26 +143,28 @@ def alist(
 
     # Print results if requested
     if print_results:
-        _print_yaml_summary(result, result_origins, indent_size)
+        _print_yaml_summary(result, indent_size)
         return None
     else:
         return result
 
 
 def _print_yaml_summary(
-    file_keys: Dict[str, List[str]],
-    file_origins: Dict[str, str],
+    result: Dict[str, Dict[str, List[str]]],
     indent_size: int = 2
 ):
     """
     Print a nicely formatted summary of YAML files and their keys using Rich.
 
     Args:
-        file_keys: Dictionary mapping file paths to lists of their top-level keys
-        file_origins: Dictionary mapping file paths to their origin directories
+        result: Dictionary with 'current' and 'aini' keys, each containing dictionaries
+               mapping file paths to lists of their top-level keys
         indent_size: Size of the indentation (default: 2)
     """
-    if not file_keys:
+    # Get total number of files
+    total_files = len(result.get('current', {})) + len(result.get('aini', {}))
+
+    if total_files == 0:
         console.print("[bold red]No YAML files found.[/bold red]")
         return
 
@@ -156,36 +172,16 @@ def _print_yaml_summary(
     cwd = str(Path(os.getcwd()).resolve())
     script_dir = str(Path(os.path.dirname(os.path.abspath(__file__))).resolve())
 
-    # Create two dictionaries of dictionaries to prevent subfolder name collisions
-    # Structure: {dir_name: {file_name: {keys: [...], path: original_path}}}
-    cwd_files = {}
+    # Format paths with forward slashes for consistency
+    cwd_formatted = cwd.replace('\\', '/')
+    script_dir_formatted = script_dir.replace('\\', '/')
+
+    # Group files by directory
+    cwd_files = {}  # Structure: {dir_name: {file_name: {keys: [...]}}}
     aini_files = {}
 
-    # Debug print the origins and paths
-    if logger.level <= logging.INFO:
-        logger.info(f"CWD: {cwd}")
-        logger.info(f"Script dir: {script_dir}")
-        for path, origin in file_origins.items():
-            logger.info(f"File: {path}, Origin: {origin}")
-
-    # Group files by directory and categorize them
-    for file_path, keys in file_keys.items():
-        # Use the origin information to determine the source
-        origin = file_origins.get(file_path, "")
-
-        # Normalize paths for comparison
-        origin_path = str(Path(origin).resolve())
-
-        # Determine which target dictionary to use by checking if origin starts with cwd
-        if origin_path == cwd or origin_path.startswith(cwd + os.sep):
-            target_dict = cwd_files
-            if logger.level <= logging.INFO:
-                logger.info(f"Categorizing {file_path} as CWD file")
-        else:
-            target_dict = aini_files
-            if logger.level <= logging.INFO:
-                logger.info(f"Categorizing {file_path} as aini file")
-
+    # Process current working directory files
+    for file_path, keys in result.get('current', {}).items():
         # Split path into directory and filename parts
         path_parts = file_path.split('/')
         if len(path_parts) > 1:
@@ -196,11 +192,32 @@ def _print_yaml_summary(
             file_name = file_path
 
         # Initialize directory dictionary if not present
-        if dir_name not in target_dict:
-            target_dict[dir_name] = {}
+        if dir_name not in cwd_files:
+            cwd_files[dir_name] = {}
 
-        # Store file with its keys and original path
-        target_dict[dir_name][file_name] = {
+        # Store file with its keys
+        cwd_files[dir_name][file_name] = {
+            'keys': keys,
+            'original_path': file_path
+        }
+
+    # Process aini directory files
+    for file_path, keys in result.get('aini', {}).items():
+        # Split path into directory and filename parts
+        path_parts = file_path.split('/')
+        if len(path_parts) > 1:
+            dir_name = '/'.join(path_parts[:-1])
+            file_name = path_parts[-1]
+        else:
+            dir_name = "."  # Root directory
+            file_name = file_path
+
+        # Initialize directory dictionary if not present
+        if dir_name not in aini_files:
+            aini_files[dir_name] = {}
+
+        # Store file with its keys
+        aini_files[dir_name][file_name] = {
             'keys': keys,
             'original_path': file_path
         }
@@ -208,13 +225,13 @@ def _print_yaml_summary(
     # Create a main tree
     guide_style = f"bright_black {' ' * (indent_size - 1)}"
     main_tree = Tree(
-        f"[bold blue]Found {len(file_keys)} YAML file(s)[/bold blue]",
+        f"[bold blue]Found {total_files} YAML file(s)[/bold blue]",
         guide_style=guide_style
     )
 
     # Add Current Working Directory section if there are files
     if cwd_files:
-        cwd_tree = main_tree.add("[bold magenta]Current Working Directory[/bold magenta]")
+        cwd_tree = main_tree.add(f"[bold magenta]Current Working Directory[/bold magenta]: [dim]{cwd_formatted}/[/dim]")
 
         # Sort directories for consistent output
         for dir_name in sorted(cwd_files.keys()):
@@ -237,7 +254,7 @@ def _print_yaml_summary(
 
     # Add aini / Site-Packages section if there are files
     if aini_files:
-        aini_tree = main_tree.add("[bold magenta]aini / Site-Packages[/bold magenta]")
+        aini_tree = main_tree.add(f"[bold magenta]aini / Site-Packages[/bold magenta]: [dim]{script_dir_formatted}/[/dim]")
 
         # Sort directories for consistent output
         for dir_name in sorted(aini_files.keys()):
