@@ -270,4 +270,8 @@ In [20]: alist(key='lang')
 │     └── lang_book/                                                               │
 │         └── idea_validator.yml: clarifier, researcher, competitor, report        │
 ╰──────────────────────────────────────────────────────────────────────────────────╯
+
+# From the files it's easy to find where to load DeepSeek R1:
+#   Under folder lang/, file llm.yml, and r1 as key
+In [21]: r1 = aini('lang/llm:r1')
 ```
