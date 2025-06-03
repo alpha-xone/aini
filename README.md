@@ -2,7 +2,7 @@
 
 # aini
 
-Declarative AI components - make **AI** component **ini**tialization easy with auto-imports.
+Declarative AI components - make **AI** component **ini**tialization easy with auto-imports and prebuilt YAML configs.
 
 ---
 
