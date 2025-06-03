@@ -238,27 +238,4 @@ assistant:
 
 ```bash
 pip install aini
-=======
-# List all YAML files with a specific keyword
-In [20]: alist(key='lang')
-╭──────────────────────────────────────────────────────────────────────────────────╮
-│ Found 9 YAML file(s)                                                             │
-│ └── aini / Site-Packages: C:/Python3/Lib/site-packages/aini/                     │
-│     ├── lang/                                                                    │
-│     │   ├── config.yml: config                                                   │
-│     │   ├── graph.yml: state_graph                                               │
-│     │   ├── llm.yml: ds, r1, sf-qwen, sf-qwen-14b, sf-qwen-30b, sf-qwen-32b      │
-│     │   ├── memory.yml: instore, saver                                           │
-│     │   ├── msg.yml: msg_state, sys, human, user, ai, invoke, prompt             │
-│     │   ├── react.yml: agent                                                     │
-│     │   ├── supervisor.yml: supervisor                                           │
-│     │   └── tools.yml: tavily                                                    │
-│     └── lang_book/                                                               │
-│         └── idea_validator.yml: clarifier, researcher, competitor, report        │
-╰──────────────────────────────────────────────────────────────────────────────────╯
-
-# From the files it's easy to find where to load DeepSeek R1:
-#   Under folder lang/, file llm.yml, and r1 as key
-In [21]: r1 = aini('lang/llm:r1')
->>>>>>> f769efe1b5ecf1024e2984e2556b2c6c88e7574a
 ```
