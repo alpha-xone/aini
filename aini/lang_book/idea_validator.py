@@ -20,15 +20,25 @@ class MarketResearch(BaseModel):
     target_customer_segments: str = Field(..., description="Target customer segments.")
 
 
-def idea_validator():
+def idea_validator(model=None, tools=None):
     """Idea validator workflow for startup ideas."""
+    if model is None:
+        # Use DeepSeek as the default LLM model
+        model = aini('lang/llm:ds')
+    if tools is None:
+        # Use Tavily as the default search tool
+        tools = [aini('lang/tool:tavily')]
+
+    # Load roles from the idea_validator configuration
     roles = aini('lang_book/idea_validator')
+
+    kwargs = {'model': model, 'tools': tools}
     return (
         # Agent will use DeepSeek as LLM model and Tavily as search tool by default
-        aini('lang/react', response_format=IdeaClarification, prompt=roles['clarifier'])
-        | aini('lang/react', response_format=MarketResearch, prompt=roles['researcher'])
-        | aini('lang/react', prompt=roles['competitor'])
-        | aini('lang/react', prompt=roles['report'])
+        aini('lang/react', response_format=IdeaClarification, prompt=roles['clarifier'], **kwargs)
+        | aini('lang/react', response_format=MarketResearch, prompt=roles['researcher'], **kwargs)
+        | aini('lang/react', prompt=roles['competitor'], **kwargs)
+        | aini('lang/react', prompt=roles['report'], **kwargs)
     )
 
 

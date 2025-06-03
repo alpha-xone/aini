@@ -1,12 +1,12 @@
-defaults:
-  model:
-    class: langchain_deepseek.ChatDeepSeek
-    params:
-      model: deepseek-chat
-  # tools:
-  #   - class: langchain_tavily.TavilySearch
-  # checkpointer:
-  #   class: langgraph.checkpoint.memory.MemorySaver
+# defaults:
+#   model:
+#     class: langchain_deepseek.ChatDeepSeek
+#     params:
+#       model: deepseek-chat
+#   tools:
+#     - class: langchain_tavily.TavilySearch
+#   checkpointer:
+#     class: langgraph.checkpoint.memory.MemorySaver
 
 agent:
   class: langgraph.prebuilt.create_react_agent

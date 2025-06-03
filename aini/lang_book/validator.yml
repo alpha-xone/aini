@@ -1,0 +1,56 @@
+defaults:
+  model:
+    class: langchain_deepseek.ChatDeepSeek
+    params:
+      model: deepseek-chat
+  tools:
+    - class: langchain_tavily.TavilySearch
+
+clarifier:
+  class: langgraph.prebuilt.create_react_agent
+  params:
+    name: idea_clarifier
+    model: ${model}
+    tools: ${tools}
+    response_format: ${clarifier_format}
+    prompt: |
+      Given a user's startup idea, its your goal to refine that idea.
+      Evaluates the originality of the idea by comparing it with existing concepts.
+      Define the mission and objectives of the startup.
+
+researcher:
+  class: langgraph.prebuilt.create_react_agent
+  params:
+    name: idea_researcher
+    model: ${model}
+    tools: ${tools}
+    response_format: ${researcher_format}
+    prompt: |
+      You are provided with a startup idea and the company's mission and objectives.
+      Estimate the total addressable market (TAM), serviceable available market (SAM), and serviceable obtainable market (SOM).
+      Define target customer segments and their characteristics.
+      Search the web for resources if you need to.
+
+competitor:
+  class: langgraph.prebuilt.create_react_agent
+  params:
+    name: idea_competitor
+    model: ${model}
+    tools: ${tools}
+    response_format: ${competitor_format}
+    prompt: |
+      You are provided with a startup idea and some market research related to the idea.
+      Identify existing competitors in the market.
+      Perform Strengths, Weaknesses, Opportunities, and Threats (SWOT) analysis for each competitor.
+      Assess the startup’s potential positioning relative to competitors.
+
+report:
+  class: langgraph.prebuilt.create_react_agent
+  params:
+    name: idea_reporter
+    model: ${model}
+    tools: ${tools}
+    response_format: ${report_format}
+    prompt: |
+      You are provided with a startup idea and other data about the idea.
+      Summarise everything into a single report. Respond in Markdown format.

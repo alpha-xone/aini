@@ -17,4 +17,4 @@ competitor: |
 
 report: |
   You are provided with a startup idea and other data about the idea.
-  Summarise everything into a single report.
+  Summarise everything into a single report. Respond in Markdown format.
