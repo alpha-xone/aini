@@ -370,6 +370,7 @@ def filter_branches_with_injections(
     """
     Filter branches at the second level, keeping only those with variable injections or values.
     Also handle special cases like init=false.
+    Top-level kwargs are always preserved regardless of their values.
 
     Args:
         config_item: The configuration item to filter
@@ -398,7 +399,11 @@ def filter_branches_with_injections(
         # Filter params to keep only branches with injections or values
         filtered_params = {}
         for param_key, param_val in params.items():
-            if has_variable_injections_or_values(param_val, original_kwargs, os.environ, default_vars):
+            # Always keep top-level kwargs, even if empty
+            if param_key in original_kwargs:
+                filtered_params[param_key] = param_val
+            # For other params, only keep if they have injections or values
+            elif has_variable_injections_or_values(param_val, original_kwargs, os.environ, default_vars):
                 filtered_params[param_key] = param_val
 
         # Only inject remaining kwargs to top-level class
@@ -410,7 +415,11 @@ def filter_branches_with_injections(
         # For regular dictionaries, filter at the second level
         filtered_dict = {}
         for key, val in config_item.items():
-            if has_variable_injections_or_values(val, original_kwargs, os.environ, default_vars):
+            # Always keep top-level kwargs, even if empty
+            if key in original_kwargs:
+                filtered_dict[key] = val
+            # For other keys, only keep if they have injections or values
+            elif has_variable_injections_or_values(val, original_kwargs, os.environ, default_vars):
                 filtered_dict[key] = val
 
         return build_from_config(filtered_dict, base_module)
