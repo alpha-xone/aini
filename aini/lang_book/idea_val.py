@@ -31,6 +31,7 @@ def agent(role: str):
         name=role,
         prompt=roles[role],
         model=aini('lang/llm:ds'),
+        tools=[aini('lang/tools:tavily')],
         response_format=formatter.get(role, None),
     )
 
